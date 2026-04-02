@@ -762,6 +762,7 @@
     };
 
     const SENSOR_HINT = "Nach vorne kippen = richtig. Nach hinten kippen oder Falsch-Button = skip.";
+    let feedbackAudioContext = null;
 
     const elements = {
       flash: document.getElementById("flash"),
@@ -929,9 +930,72 @@
       }, 180);
     }
 
-    function vibrate(pattern) {
-      if (navigator.vibrate) {
-        navigator.vibrate(pattern);
+    function ensureFeedbackAudio() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) {
+        return null;
+      }
+
+      if (!feedbackAudioContext) {
+        feedbackAudioContext = new AudioCtx();
+      }
+
+      if (feedbackAudioContext.state === "suspended") {
+        feedbackAudioContext.resume().catch(() => {});
+      }
+
+      return feedbackAudioContext;
+    }
+
+    function playAudioFeedback(kind) {
+      const ctx = ensureFeedbackAudio();
+      if (!ctx) {
+        return;
+      }
+
+      const tones = kind === "correct"
+        ? [{ freq: 860, duration: 0.11, delay: 0, gain: 0.06 }]
+        : [
+            { freq: 290, duration: 0.07, delay: 0, gain: 0.06 },
+            { freq: 220, duration: 0.1, delay: 0.12, gain: 0.06 }
+          ];
+
+      const startBase = ctx.currentTime + 0.01;
+
+      tones.forEach((tone) => {
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        const start = startBase + tone.delay;
+        const end = start + tone.duration;
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(tone.freq, start);
+
+        gainNode.gain.setValueAtTime(0.0001, start);
+        gainNode.gain.exponentialRampToValueAtTime(tone.gain, start + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, end);
+
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(end + 0.02);
+      });
+    }
+
+    function runHapticFeedback(kind) {
+      const pattern = kind === "correct" ? [120] : [40, 70, 40];
+      let didVibrate = false;
+
+      if (typeof navigator.vibrate === "function") {
+        try {
+          didVibrate = Boolean(navigator.vibrate(pattern));
+        } catch (error) {
+          didVibrate = false;
+        }
+      }
+
+      if (!didVibrate) {
+        playAudioFeedback(kind);
       }
     }
 
@@ -958,6 +1022,8 @@
     }
 
     function updateSensorUi() {
+      const vibrationSupported = typeof navigator.vibrate === "function";
+
       if (state.sensorPermissionNeeded && !state.sensorEnabled) {
         elements.sensorBtn.classList.remove("hidden");
         elements.sensorNote.classList.add("warning");
@@ -969,7 +1035,9 @@
       elements.sensorNote.classList.remove("warning");
 
       if (state.sensorEnabled) {
-        elements.sensorNote.textContent = SENSOR_HINT;
+        elements.sensorNote.textContent = vibrationSupported
+          ? SENSOR_HINT
+          : SENSOR_HINT + " Vibration wird von diesem Browser nicht unterstuetzt, daher gibt es Tonfeedback.";
       } else {
         elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Nutze die Buttons fuer Richtig/Falsch.";
       }
@@ -1012,11 +1080,11 @@
       if (kind === "correct") {
         state.correctCount += 1;
         flashScreen("rgba(51, 196, 125, 0.82)");
-        vibrate([120]);
+        runHapticFeedback("correct");
       } else {
         state.skipCount += 1;
         flashScreen("rgba(255, 87, 87, 0.8)");
-        vibrate([40, 70, 40]);
+        runHapticFeedback("skip");
       }
 
       state.currentIndex += 1;
@@ -1115,6 +1183,7 @@
       elements.categoryTitle.textContent = isCustom ? "Eigenes Deck" : categoryName;
 
       const fullscreenOk = await enterFullscreen();
+      ensureFeedbackAudio();
       document.body.classList.add("game-active");
       elements.startScreen.classList.add("hidden");
       elements.gameScreen.classList.remove("hidden");
