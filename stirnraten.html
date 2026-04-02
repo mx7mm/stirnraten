@@ -669,6 +669,7 @@
         <div class="sensor-ui">
           <div class="sensor-note" id="sensor-note">Nach vorne kippen = richtig. Nach hinten kippen = falsch.</div>
           <button class="secondary hidden" id="sensor-btn">Bewegung aktivieren</button>
+          <button class="secondary hidden" id="recalibrate-btn">Neigung neu kalibrieren</button>
         </div>
         <button class="success" id="next-word-btn">Richtig</button>
         <button class="secondary" id="skip-word-btn">Falsch / ueberspringen</button>
@@ -754,9 +755,12 @@
       lastTiltAt: 0,
       smoothedBeta: 0,
       neutralBeta: null,
-      tiltCandidate: "",
-      tiltCandidateSince: 0,
-      tiltCooldownMs: 900,
+      gestureType: "",
+      gestureArmedAt: 0,
+      gesturePeak: 0,
+      tiltCooldownMs: 850,
+      calibrationActive: false,
+      calibrationSamples: [],
       correctCount: 0,
       skipCount: 0
     };
@@ -778,6 +782,7 @@
       hintDisplay: document.getElementById("hint-display"),
       sensorNote: document.getElementById("sensor-note"),
       sensorBtn: document.getElementById("sensor-btn"),
+      recalibrateBtn: document.getElementById("recalibrate-btn"),
       nextWordBtn: document.getElementById("next-word-btn"),
       skipWordBtn: document.getElementById("skip-word-btn"),
       restartBtn: document.getElementById("restart-btn"),
@@ -909,6 +914,49 @@
       }
     }
 
+    function resetTiltGesture() {
+      state.gestureType = "";
+      state.gestureArmedAt = 0;
+      state.gesturePeak = 0;
+    }
+
+    function applyCalibrationFromSamples(samples) {
+      if (!samples || samples.length < 6) {
+        return false;
+      }
+
+      const sorted = [...samples].sort((a, b) => a - b);
+      const trim = Math.floor(sorted.length * 0.2);
+      const start = Math.min(trim, sorted.length - 1);
+      const end = Math.max(start + 1, sorted.length - trim);
+      const core = sorted.slice(start, end);
+      const average = core.reduce((sum, value) => sum + value, 0) / core.length;
+
+      state.neutralBeta = average;
+      state.smoothedBeta = average;
+      state.tiltLocked = false;
+      resetTiltGesture();
+      return true;
+    }
+
+    async function calibrateTilt(durationMs = 850) {
+      if (!state.sensorEnabled) {
+        return false;
+      }
+
+      state.calibrationActive = true;
+      state.calibrationSamples = [];
+      elements.sensorNote.classList.add("warning");
+      elements.sensorNote.textContent = "Kalibriere Neigung ... Handy kurz ruhig an der Stirn halten.";
+
+      await new Promise((resolve) => window.setTimeout(resolve, durationMs));
+
+      state.calibrationActive = false;
+      const calibrated = applyCalibrationFromSamples(state.calibrationSamples);
+      updateSensorUi();
+      return calibrated;
+    }
+
     function showWord() {
       state.currentWord = state.deck[state.currentIndex] || "";
       if (!state.currentWord) {
@@ -1026,19 +1074,24 @@
 
       if (state.sensorPermissionNeeded && !state.sensorEnabled) {
         elements.sensorBtn.classList.remove("hidden");
+        elements.recalibrateBtn.classList.add("hidden");
         elements.sensorNote.classList.add("warning");
         elements.sensorNote.textContent = "Falls nichts passiert: Bewegung einmal aktivieren.";
         return;
       }
 
       elements.sensorBtn.classList.add("hidden");
-      elements.sensorNote.classList.remove("warning");
+      if (!state.calibrationActive) {
+        elements.sensorNote.classList.remove("warning");
+      }
 
       if (state.sensorEnabled) {
+        elements.recalibrateBtn.classList.remove("hidden");
         elements.sensorNote.textContent = vibrationSupported
           ? SENSOR_HINT
           : SENSOR_HINT + " Vibration wird von diesem Browser nicht unterstuetzt, daher gibt es Tonfeedback.";
       } else {
+        elements.recalibrateBtn.classList.add("hidden");
         elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Nutze die Buttons fuer Richtig/Falsch.";
       }
     }
@@ -1092,16 +1145,26 @@
     }
 
     function handleOrientation(event) {
-      if (!state.sensorEnabled || !state.selectedCategory || !state.roundActive || state.countdownActive) {
-        return;
-      }
-
       const rawBeta = typeof event.beta === "number" ? event.beta : null;
       if (rawBeta === null) {
         return;
       }
 
-      state.smoothedBeta = state.smoothedBeta * 0.82 + rawBeta * 0.18;
+      if (state.smoothedBeta === 0) {
+        state.smoothedBeta = rawBeta;
+      } else {
+        state.smoothedBeta = state.smoothedBeta * 0.8 + rawBeta * 0.2;
+      }
+
+      if (state.calibrationActive) {
+        state.calibrationSamples.push(rawBeta);
+        return;
+      }
+
+      if (!state.sensorEnabled || !state.selectedCategory || !state.roundActive || state.countdownActive) {
+        return;
+      }
+
       const beta = state.smoothedBeta;
       if (state.neutralBeta === null) {
         state.neutralBeta = beta;
@@ -1109,44 +1172,74 @@
       }
 
       const now = Date.now();
-
-      if (!state.tiltLocked && Math.abs(beta - state.neutralBeta) < 8) {
-        state.neutralBeta = state.neutralBeta * 0.96 + beta * 0.04;
-      }
-
       const delta = beta - state.neutralBeta;
 
-      let candidate = "";
-      if (delta < -18) {
-        candidate = "correct";
-      } else if (delta > 18) {
-        candidate = "skip";
+      if (state.tiltLocked) {
+        if (Math.abs(delta) < 8 && now - state.lastTiltAt > 220) {
+          state.tiltLocked = false;
+          resetTiltGesture();
+        }
+        return;
       }
 
-      if (candidate) {
-        if (state.tiltCandidate !== candidate) {
-          state.tiltCandidate = candidate;
-          state.tiltCandidateSince = now;
+      if (now - state.lastTiltAt < state.tiltCooldownMs) {
+        return;
+      }
+
+      if (Math.abs(delta) < 8) {
+        state.neutralBeta = state.neutralBeta * 0.97 + beta * 0.03;
+        resetTiltGesture();
+        return;
+      }
+
+      const armThreshold = 13;
+      const confirmThreshold = 24;
+      const holdMs = 95;
+
+      if (!state.gestureType) {
+        if (delta <= -armThreshold) {
+          state.gestureType = "correct";
+          state.gestureArmedAt = now;
+          state.gesturePeak = delta;
+        } else if (delta >= armThreshold) {
+          state.gestureType = "skip";
+          state.gestureArmedAt = now;
+          state.gesturePeak = delta;
+        }
+        return;
+      }
+
+      if (state.gestureType === "correct") {
+        if (delta >= armThreshold) {
+          state.gestureType = "skip";
+          state.gestureArmedAt = now;
+          state.gesturePeak = delta;
           return;
         }
 
-        if (now - state.tiltCandidateSince < 120) {
-          return;
-        }
-
-        if (!state.tiltLocked && now - state.lastTiltAt >= state.tiltCooldownMs) {
+        state.gesturePeak = Math.min(state.gesturePeak, delta);
+        if (state.gesturePeak <= -confirmThreshold && now - state.gestureArmedAt >= holdMs) {
           state.tiltLocked = true;
           state.lastTiltAt = now;
-          nextWord(candidate);
-          return;
+          resetTiltGesture();
+          nextWord("correct");
         }
-      } else {
-        state.tiltCandidate = "";
-        state.tiltCandidateSince = 0;
+        return;
       }
 
-      if (Math.abs(delta) < 7) {
-        state.tiltLocked = false;
+      if (delta <= -armThreshold) {
+        state.gestureType = "correct";
+        state.gestureArmedAt = now;
+        state.gesturePeak = delta;
+        return;
+      }
+
+      state.gesturePeak = Math.max(state.gesturePeak, delta);
+      if (state.gesturePeak >= confirmThreshold && now - state.gestureArmedAt >= holdMs) {
+        state.tiltLocked = true;
+        state.lastTiltAt = now;
+        resetTiltGesture();
+        nextWord("skip");
       }
     }
 
@@ -1174,8 +1267,11 @@
       state.lastTiltAt = 0;
       state.smoothedBeta = 0;
       state.neutralBeta = null;
-      state.tiltCandidate = "";
-      state.tiltCandidateSince = 0;
+      state.gestureType = "";
+      state.gestureArmedAt = 0;
+      state.gesturePeak = 0;
+      state.calibrationActive = false;
+      state.calibrationSamples = [];
       state.correctCount = 0;
       state.skipCount = 0;
 
@@ -1190,6 +1286,9 @@
       elements.results.classList.add("hidden");
 
       await enableMotion();
+      if (state.sensorEnabled) {
+        await calibrateTilt(900);
+      }
       showWord();
       updateProgress();
 
@@ -1248,8 +1347,11 @@
       state.lastTiltAt = 0;
       state.smoothedBeta = 0;
       state.neutralBeta = null;
-      state.tiltCandidate = "";
-      state.tiltCandidateSince = 0;
+      state.gestureType = "";
+      state.gestureArmedAt = 0;
+      state.gesturePeak = 0;
+      state.calibrationActive = false;
+      state.calibrationSamples = [];
       state.correctCount = 0;
       state.skipCount = 0;
       state.countdownActive = false;
@@ -1258,9 +1360,16 @@
       elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
       showWord();
       updateProgress();
-      runCountdown().then(() => {
+
+      const startRound = async () => {
+        if (state.sensorEnabled) {
+          await calibrateTilt(700);
+        }
+        await runCountdown();
         startTimer();
-      });
+      };
+
+      startRound();
     }
 
     function resetToStart() {
@@ -1275,8 +1384,11 @@
       state.countdownActive = false;
       state.smoothedBeta = 0;
       state.neutralBeta = null;
-      state.tiltCandidate = "";
-      state.tiltCandidateSince = 0;
+      state.gestureType = "";
+      state.gestureArmedAt = 0;
+      state.gesturePeak = 0;
+      state.calibrationActive = false;
+      state.calibrationSamples = [];
       state.correctCount = 0;
       state.skipCount = 0;
 
@@ -1300,6 +1412,7 @@
     elements.skipWordBtn.addEventListener("click", () => nextWord("skip"));
     elements.restartBtn.addEventListener("click", resetToStart);
     elements.sensorBtn.addEventListener("click", enableMotion);
+    elements.recalibrateBtn.addEventListener("click", () => calibrateTilt(900));
     elements.playAgainBtn.addEventListener("click", replayCurrentCategory);
     elements.resultsHomeBtn.addEventListener("click", resetToStart);
     elements.customWords.addEventListener("input", updateCustomDeckUi);
