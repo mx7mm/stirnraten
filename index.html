@@ -241,6 +241,43 @@
       font-size: 0.9rem;
     }
 
+    .settings-panel {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .setting {
+      display: grid;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .setting select {
+      width: 100%;
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      outline: none;
+    }
+
+    .setting select:focus-visible {
+      border-color: rgba(255, 255, 255, 0.42);
+    }
+
     .category {
       width: 100%;
       border: 0;
@@ -315,6 +352,12 @@
       padding: 6px 6px 0;
     }
 
+    .topbar-controls {
+      display: grid;
+      justify-items: end;
+      gap: 8px;
+    }
+
     .meta {
       color: rgba(255, 255, 255, 0.86);
       font-size: 0.92rem;
@@ -331,6 +374,13 @@
       border: 1px solid rgba(255, 255, 255, 0.16);
       min-width: 82px;
       text-align: center;
+    }
+
+    .pause-btn {
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      line-height: 1;
     }
 
     .word-card {
@@ -493,6 +543,35 @@
       z-index: 11;
     }
 
+    .pause-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(8, 10, 16, 0.72);
+      backdrop-filter: blur(8px);
+      border-radius: inherit;
+      z-index: 10;
+    }
+
+    .pause-card {
+      width: min(100%, 360px);
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      text-align: center;
+      display: grid;
+      gap: 12px;
+    }
+
+    .pause-card p {
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
     .results-card {
       width: min(100%, 420px);
       padding: 26px;
@@ -590,6 +669,10 @@
       .category span {
         font-size: 0.82rem;
       }
+
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -603,6 +686,28 @@
         <p class="subtitle">Kategorie antippen, Handy weitergeben, spielen.</p>
         <p class="fullscreen-note">Beim Start wechselt das Spiel wenn moeglich direkt in den Vollbildmodus.</p>
       </div>
+
+      <section class="card settings-panel">
+        <div class="eyebrow">Runden-Setup</div>
+        <div class="settings-grid">
+          <label class="setting" for="round-seconds">
+            Rundenzeit
+            <select id="round-seconds">
+              <option value="45">45 Sekunden</option>
+              <option value="60" selected>60 Sekunden</option>
+              <option value="90">90 Sekunden</option>
+            </select>
+          </label>
+          <label class="setting" for="tilt-sensitivity">
+            Neigungs-Sensitivitaet
+            <select id="tilt-sensitivity">
+              <option value="low">Niedrig (stabil)</option>
+              <option value="medium" selected>Mittel</option>
+              <option value="high">Hoch (reaktiv)</option>
+            </select>
+          </label>
+        </div>
+      </section>
 
       <div class="categories" id="categories"></div>
 
@@ -629,7 +734,10 @@
           <h2 id="category-title">Alltag</h2>
           <p class="meta" id="progress-text">1 von 12</p>
         </div>
-        <div class="timer" id="timer">60</div>
+        <div class="topbar-controls">
+          <div class="timer" id="timer">60</div>
+          <button class="secondary pause-btn" id="pause-btn" type="button">Pause</button>
+        </div>
       </div>
 
       <div class="word-card" id="word-card">
@@ -641,6 +749,14 @@
 
       <div class="countdown hidden" id="countdown">
         <div class="countdown-number" id="countdown-number">3</div>
+      </div>
+
+      <div class="pause-overlay hidden" id="pause-overlay">
+        <div class="pause-card">
+          <div class="eyebrow">Pausiert</div>
+          <p>Die Runde steht still. Tippe auf Weiter, wenn ihr bereit seid.</p>
+          <button class="success" id="resume-btn">Weiter</button>
+        </div>
       </div>
 
       <div class="results hidden" id="results">
@@ -746,11 +862,13 @@
       currentIndex: 0,
       roundSeconds: 60,
       timeLeft: 60,
+      tiltSensitivity: "medium",
       timerId: null,
       sensorEnabled: false,
       sensorPermissionNeeded: false,
       tiltLocked: false,
       countdownActive: false,
+      pauseActive: false,
       roundActive: false,
       lastTiltAt: 0,
       smoothedBeta: 0,
@@ -766,6 +884,35 @@
     };
 
     const SENSOR_HINT = "Nach vorne kippen = richtig. Nach hinten kippen oder Falsch-Button = skip.";
+    const TILT_PROFILES = {
+      low: {
+        armThreshold: 15,
+        confirmThreshold: 28,
+        holdMs: 115,
+        cooldownMs: 1000,
+        releaseWindow: 9,
+        releaseDelayMs: 260,
+        neutralWindow: 8
+      },
+      medium: {
+        armThreshold: 13,
+        confirmThreshold: 24,
+        holdMs: 95,
+        cooldownMs: 850,
+        releaseWindow: 8,
+        releaseDelayMs: 220,
+        neutralWindow: 8
+      },
+      high: {
+        armThreshold: 10,
+        confirmThreshold: 20,
+        holdMs: 75,
+        cooldownMs: 650,
+        releaseWindow: 7,
+        releaseDelayMs: 180,
+        neutralWindow: 7
+      }
+    };
     let feedbackAudioContext = null;
 
     const elements = {
@@ -773,9 +920,12 @@
       categories: document.getElementById("categories"),
       startScreen: document.getElementById("start-screen"),
       gameScreen: document.getElementById("game-screen"),
+      roundSecondsSelect: document.getElementById("round-seconds"),
+      tiltSensitivitySelect: document.getElementById("tilt-sensitivity"),
       categoryTitle: document.getElementById("category-title"),
       progressText: document.getElementById("progress-text"),
       timer: document.getElementById("timer"),
+      pauseBtn: document.getElementById("pause-btn"),
       wordCard: document.getElementById("word-card"),
       wordWrap: document.getElementById("word-wrap"),
       wordDisplay: document.getElementById("word-display"),
@@ -788,6 +938,8 @@
       restartBtn: document.getElementById("restart-btn"),
       countdown: document.getElementById("countdown"),
       countdownNumber: document.getElementById("countdown-number"),
+      pauseOverlay: document.getElementById("pause-overlay"),
+      resumeBtn: document.getElementById("resume-btn"),
       results: document.getElementById("results"),
       resultsTitle: document.getElementById("results-title"),
       resultsSubtitle: document.getElementById("results-subtitle"),
@@ -828,6 +980,25 @@
         [copy[i], copy[j]] = [copy[j], copy[i]];
       }
       return copy;
+    }
+
+    function getTiltProfile() {
+      return TILT_PROFILES[state.tiltSensitivity] || TILT_PROFILES.medium;
+    }
+
+    function applySettingsFromUi() {
+      const seconds = Number(elements.roundSecondsSelect.value);
+      if (Number.isFinite(seconds) && seconds > 0) {
+        state.roundSeconds = seconds;
+      }
+
+      const selectedSensitivity = elements.tiltSensitivitySelect.value;
+      state.tiltSensitivity = TILT_PROFILES[selectedSensitivity] ? selectedSensitivity : "medium";
+      state.tiltCooldownMs = getTiltProfile().cooldownMs;
+
+      if (!state.selectedCategory) {
+        elements.timer.textContent = state.roundSeconds;
+      }
     }
 
     function parseCustomWords() {
@@ -1061,12 +1232,57 @@
       state.roundActive = true;
       elements.nextWordBtn.disabled = false;
       elements.skipWordBtn.disabled = false;
+      elements.pauseBtn.disabled = false;
     }
 
     function stopTimer() {
       clearInterval(state.timerId);
       state.timerId = null;
       state.roundActive = false;
+    }
+
+    function updatePauseUi() {
+      if (state.pauseActive) {
+        elements.pauseOverlay.classList.remove("hidden");
+        elements.pauseBtn.textContent = "Weiter";
+      } else {
+        elements.pauseOverlay.classList.add("hidden");
+        elements.pauseBtn.textContent = "Pause";
+      }
+    }
+
+    function pauseRound() {
+      if (!state.roundActive || state.countdownActive || state.pauseActive) {
+        return;
+      }
+
+      if (!elements.results.classList.contains("hidden")) {
+        return;
+      }
+
+      state.pauseActive = true;
+      stopTimer();
+      elements.nextWordBtn.disabled = true;
+      elements.skipWordBtn.disabled = true;
+      updatePauseUi();
+    }
+
+    function resumeRound() {
+      if (!state.pauseActive || state.countdownActive || state.timeLeft <= 0) {
+        return;
+      }
+
+      state.pauseActive = false;
+      updatePauseUi();
+      startTimer();
+    }
+
+    function togglePause() {
+      if (state.pauseActive) {
+        resumeRound();
+      } else {
+        pauseRound();
+      }
     }
 
     function updateSensorUi() {
@@ -1125,7 +1341,7 @@
     }
 
     function nextWord(kind = "correct") {
-      if (!state.roundActive || state.countdownActive) {
+      if (!state.roundActive || state.countdownActive || state.pauseActive) {
         return;
       }
 
@@ -1161,7 +1377,7 @@
         return;
       }
 
-      if (!state.sensorEnabled || !state.selectedCategory || !state.roundActive || state.countdownActive) {
+      if (!state.sensorEnabled || !state.selectedCategory || !state.roundActive || state.countdownActive || state.pauseActive) {
         return;
       }
 
@@ -1173,28 +1389,29 @@
 
       const now = Date.now();
       const delta = beta - state.neutralBeta;
+      const profile = getTiltProfile();
 
       if (state.tiltLocked) {
-        if (Math.abs(delta) < 8 && now - state.lastTiltAt > 220) {
+        if (Math.abs(delta) < profile.releaseWindow && now - state.lastTiltAt > profile.releaseDelayMs) {
           state.tiltLocked = false;
           resetTiltGesture();
         }
         return;
       }
 
-      if (now - state.lastTiltAt < state.tiltCooldownMs) {
+      if (now - state.lastTiltAt < profile.cooldownMs) {
         return;
       }
 
-      if (Math.abs(delta) < 8) {
+      if (Math.abs(delta) < profile.neutralWindow) {
         state.neutralBeta = state.neutralBeta * 0.97 + beta * 0.03;
         resetTiltGesture();
         return;
       }
 
-      const armThreshold = 13;
-      const confirmThreshold = 24;
-      const holdMs = 95;
+      const armThreshold = profile.armThreshold;
+      const confirmThreshold = profile.confirmThreshold;
+      const holdMs = profile.holdMs;
 
       if (!state.gestureType) {
         if (delta <= -armThreshold) {
@@ -1259,10 +1476,12 @@
     }
 
     async function startGame(categoryName, isCustom = false) {
+      applySettingsFromUi();
       state.selectedCategory = categoryName;
       state.deck = shuffle(categories[categoryName].words);
       state.currentIndex = 0;
       state.timeLeft = state.roundSeconds;
+      state.pauseActive = false;
       state.tiltLocked = false;
       state.lastTiltAt = 0;
       state.smoothedBeta = 0;
@@ -1284,6 +1503,8 @@
       elements.startScreen.classList.add("hidden");
       elements.gameScreen.classList.remove("hidden");
       elements.results.classList.add("hidden");
+      elements.pauseBtn.disabled = true;
+      updatePauseUi();
 
       await enableMotion();
       if (state.sensorEnabled) {
@@ -1321,6 +1542,7 @@
 
     function finishGame() {
       stopTimer();
+      state.pauseActive = false;
       state.countdownActive = false;
       elements.countdown.classList.add("hidden");
       elements.wordDisplay.textContent = "Fertig";
@@ -1330,6 +1552,8 @@
       elements.timer.textContent = "00";
       elements.nextWordBtn.disabled = true;
       elements.skipWordBtn.disabled = true;
+      elements.pauseBtn.disabled = true;
+      updatePauseUi();
       showResults();
     }
 
@@ -1343,6 +1567,7 @@
       state.deck = shuffle(categories[state.selectedCategory].words);
       state.currentIndex = 0;
       state.timeLeft = state.roundSeconds;
+      state.pauseActive = false;
       state.tiltLocked = false;
       state.lastTiltAt = 0;
       state.smoothedBeta = 0;
@@ -1358,6 +1583,8 @@
 
       elements.results.classList.add("hidden");
       elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
+      elements.pauseBtn.disabled = true;
+      updatePauseUi();
       showWord();
       updateProgress();
 
@@ -1378,6 +1605,7 @@
       state.deck = [];
       state.currentWord = "";
       state.currentIndex = 0;
+      state.pauseActive = false;
       state.timeLeft = state.roundSeconds;
       state.tiltLocked = false;
       state.lastTiltAt = 0;
@@ -1402,6 +1630,8 @@
       elements.startScreen.classList.remove("hidden");
       elements.gameScreen.classList.add("hidden");
       document.body.classList.remove("game-active");
+      elements.pauseBtn.disabled = true;
+      updatePauseUi();
       elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
       elements.countdown.classList.add("hidden");
       elements.results.classList.add("hidden");
@@ -1410,6 +1640,8 @@
 
     elements.nextWordBtn.addEventListener("click", () => nextWord("correct"));
     elements.skipWordBtn.addEventListener("click", () => nextWord("skip"));
+    elements.pauseBtn.addEventListener("click", togglePause);
+    elements.resumeBtn.addEventListener("click", resumeRound);
     elements.restartBtn.addEventListener("click", resetToStart);
     elements.sensorBtn.addEventListener("click", enableMotion);
     elements.recalibrateBtn.addEventListener("click", () => calibrateTilt(900));
@@ -1417,12 +1649,21 @@
     elements.resultsHomeBtn.addEventListener("click", resetToStart);
     elements.customWords.addEventListener("input", updateCustomDeckUi);
     elements.customStartBtn.addEventListener("click", startCustomGame);
+    elements.roundSecondsSelect.addEventListener("change", applySettingsFromUi);
+    elements.tiltSensitivitySelect.addEventListener("change", () => {
+      applySettingsFromUi();
+      if (state.sensorEnabled && state.selectedCategory && !state.countdownActive) {
+        calibrateTilt(700);
+      }
+    });
     window.addEventListener("deviceorientation", handleOrientation);
     window.addEventListener("resize", fitWordText);
     document.addEventListener("fullscreenchange", syncFullscreenState);
 
     renderCategories();
-    elements.timer.textContent = state.roundSeconds;
+    applySettingsFromUi();
+    elements.pauseBtn.disabled = true;
+    updatePauseUi();
     updateSensorUi();
     updateCustomDeckUi();
     syncFullscreenState();
