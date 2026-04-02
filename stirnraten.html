@@ -187,60 +187,6 @@
       }
     }
 
-    .custom-deck {
-      padding: 18px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .custom-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .custom-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .custom-help {
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-
-    .custom-input {
-      width: 100%;
-      min-height: 124px;
-      padding: 16px 18px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
-      font: inherit;
-      resize: vertical;
-      outline: none;
-    }
-
-    .custom-input::placeholder {
-      color: rgba(248, 250, 252, 0.46);
-    }
-
-    .custom-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .custom-count {
-      color: rgba(255, 255, 255, 0.72);
-      font-size: 0.9rem;
-    }
-
     .settings-panel {
       padding: 16px;
       display: grid;
@@ -710,21 +656,6 @@
       </section>
 
       <div class="categories" id="categories"></div>
-
-      <section class="card custom-deck">
-        <div class="custom-header">
-          <div>
-            <div class="eyebrow">Eigene Begriffe</div>
-            <p class="custom-title">Eigenes Deck starten</p>
-          </div>
-        </div>
-        <p class="custom-help">Ein Begriff pro Zeile. Perfekt fuer Insider, Themenabende oder schnelle eigene Kategorien.</p>
-        <textarea class="custom-input" id="custom-words" placeholder="Taylor Swift&#10;Espresso Martini&#10;SpongeBob"></textarea>
-        <div class="custom-row">
-          <span class="custom-count" id="custom-count">0 Begriffe</span>
-          <button class="success" id="custom-start-btn" disabled>Eigenes Deck starten</button>
-        </div>
-      </section>
     </section>
 
     <section class="screen card play hidden" id="game-screen">
@@ -1070,10 +1001,7 @@
       correctCount: document.getElementById("correct-count"),
       skipCount: document.getElementById("skip-count"),
       playAgainBtn: document.getElementById("play-again-btn"),
-      resultsHomeBtn: document.getElementById("results-home-btn"),
-      customWords: document.getElementById("custom-words"),
-      customCount: document.getElementById("custom-count"),
-      customStartBtn: document.getElementById("custom-start-btn")
+      resultsHomeBtn: document.getElementById("results-home-btn")
     };
 
     function syncFullscreenState() {
@@ -1125,20 +1053,6 @@
       }
     }
 
-    function parseCustomWords() {
-      return elements.customWords.value
-        .split("\n")
-        .map((word) => word.trim())
-        .filter(Boolean);
-    }
-
-    function updateCustomDeckUi() {
-      const words = parseCustomWords();
-      const uniqueCount = new Set(words).size;
-      elements.customCount.textContent = uniqueCount + (uniqueCount === 1 ? " Begriff" : " Begriffe");
-      elements.customStartBtn.disabled = uniqueCount < 3;
-    }
-
     function renderCategories() {
       elements.categories.innerHTML = "";
       Object.entries(categories).forEach(([name, category]) => {
@@ -1151,22 +1065,6 @@
         button.addEventListener("click", () => startGame(name));
         elements.categories.appendChild(button);
       });
-    }
-
-    async function startCustomGame() {
-      const words = [...new Set(parseCustomWords())];
-      if (words.length < 3) {
-        updateCustomDeckUi();
-        return;
-      }
-
-      const customCategory = {
-        colors: ["#f857a6", "#ff5858"],
-        words
-      };
-
-      categories.EigenesDeck = customCategory;
-      await startGame("EigenesDeck", true);
     }
 
     function applyTheme(categoryName) {
@@ -1599,7 +1497,7 @@
       state.countdownActive = false;
     }
 
-    async function startGame(categoryName, isCustom = false) {
+    async function startGame(categoryName) {
       applySettingsFromUi();
       state.selectedCategory = categoryName;
       state.deck = shuffle(categories[categoryName].words);
@@ -1619,7 +1517,7 @@
       state.skipCount = 0;
 
       applyTheme(categoryName);
-      elements.categoryTitle.textContent = isCustom ? "Eigenes Deck" : categoryName;
+      elements.categoryTitle.textContent = categoryName;
 
       const fullscreenOk = await enterFullscreen();
       ensureFeedbackAudio();
@@ -1771,8 +1669,6 @@
     elements.recalibrateBtn.addEventListener("click", () => calibrateTilt(900));
     elements.playAgainBtn.addEventListener("click", replayCurrentCategory);
     elements.resultsHomeBtn.addEventListener("click", resetToStart);
-    elements.customWords.addEventListener("input", updateCustomDeckUi);
-    elements.customStartBtn.addEventListener("click", startCustomGame);
     elements.roundSecondsSelect.addEventListener("change", applySettingsFromUi);
     elements.tiltSensitivitySelect.addEventListener("change", () => {
       applySettingsFromUi();
@@ -1789,7 +1685,6 @@
     elements.pauseBtn.disabled = true;
     updatePauseUi();
     updateSensorUi();
-    updateCustomDeckUi();
     syncFullscreenState();
   </script>
 </body>
