@@ -207,6 +207,40 @@
       gap: 14px;
     }
 
+    .setup-toggle {
+      overflow: hidden;
+    }
+
+    .setup-toggle > summary {
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: rgba(236, 242, 255, 0.9);
+      padding: 2px 2px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .setup-toggle > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .setup-toggle > summary::after {
+      content: "Mehr";
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(206, 220, 248, 0.7);
+    }
+
+    .setup-toggle[open] > summary::after {
+      content: "Weniger";
+    }
+
     .settings-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -424,6 +458,12 @@
     .stack {
       display: grid;
       gap: 12px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
 
     .sensor-note {
@@ -671,8 +711,8 @@
         <p class="fullscreen-note">Beim Start wechselt das Spiel wenn moeglich direkt in den Vollbildmodus.</p>
       </div>
 
-      <section class="card settings-panel">
-        <div class="eyebrow">Runden-Setup</div>
+      <details class="card settings-panel setup-toggle">
+        <summary>Runden-Setup (optional)</summary>
         <div class="settings-grid">
           <label class="setting" for="round-seconds">
             Rundenzeit
@@ -691,7 +731,7 @@
             </select>
           </label>
         </div>
-      </section>
+      </details>
 
       <div class="categories" id="categories"></div>
     </section>
@@ -705,7 +745,7 @@
         </div>
         <div class="topbar-controls">
           <div class="timer" id="timer">60</div>
-          <button class="secondary pause-btn" id="pause-btn" type="button">Pause</button>
+          <button class="secondary pause-btn" id="pause-btn" type="button">Menue</button>
         </div>
       </div>
 
@@ -722,9 +762,14 @@
 
       <div class="pause-overlay hidden" id="pause-overlay">
         <div class="pause-card">
-          <div class="eyebrow">Pausiert</div>
-          <p>Die Runde steht still. Tippe auf Weiter, wenn ihr bereit seid.</p>
-          <button class="success" id="resume-btn">Weiter</button>
+          <div class="eyebrow">Menue</div>
+          <p>Kurze Pause oder direkt neue Kategorie.</p>
+          <div class="stack">
+            <button class="success" id="resume-btn">Weiter</button>
+            <button class="secondary hidden" id="menu-recalibrate-btn">Neigung neu kalibrieren</button>
+            <button class="secondary hidden" id="sensor-btn">Bewegung aktivieren</button>
+            <button class="secondary" id="menu-home-btn">Neue Kategorie</button>
+          </div>
         </div>
       </div>
 
@@ -753,12 +798,11 @@
       <div class="stack">
         <div class="sensor-ui">
           <div class="sensor-note" id="sensor-note">Nach vorne kippen = richtig. Nach hinten kippen = falsch.</div>
-          <button class="secondary hidden" id="sensor-btn">Bewegung aktivieren</button>
-          <button class="secondary hidden" id="recalibrate-btn">Neigung neu kalibrieren</button>
         </div>
-        <button class="success" id="next-word-btn">Richtig</button>
-        <button class="secondary" id="skip-word-btn">Falsch / ueberspringen</button>
-        <button class="secondary" id="restart-btn">Neue Kategorie</button>
+        <div class="action-row">
+          <button class="success" id="next-word-btn">Richtig</button>
+          <button class="secondary" id="skip-word-btn">Falsch</button>
+        </div>
       </div>
     </section>
   </main>
@@ -1025,14 +1069,14 @@
       hintDisplay: document.getElementById("hint-display"),
       sensorNote: document.getElementById("sensor-note"),
       sensorBtn: document.getElementById("sensor-btn"),
-      recalibrateBtn: document.getElementById("recalibrate-btn"),
+      menuRecalibrateBtn: document.getElementById("menu-recalibrate-btn"),
       nextWordBtn: document.getElementById("next-word-btn"),
       skipWordBtn: document.getElementById("skip-word-btn"),
-      restartBtn: document.getElementById("restart-btn"),
       countdown: document.getElementById("countdown"),
       countdownNumber: document.getElementById("countdown-number"),
       pauseOverlay: document.getElementById("pause-overlay"),
       resumeBtn: document.getElementById("resume-btn"),
+      menuHomeBtn: document.getElementById("menu-home-btn"),
       results: document.getElementById("results"),
       resultsTitle: document.getElementById("results-title"),
       resultsSubtitle: document.getElementById("results-subtitle"),
@@ -1304,11 +1348,10 @@
     function updatePauseUi() {
       if (state.pauseActive) {
         elements.pauseOverlay.classList.remove("hidden");
-        elements.pauseBtn.textContent = "Weiter";
       } else {
         elements.pauseOverlay.classList.add("hidden");
-        elements.pauseBtn.textContent = "Pause";
       }
+      elements.pauseBtn.textContent = "Menue";
     }
 
     function pauseRound() {
@@ -1350,9 +1393,9 @@
 
       if (state.sensorPermissionNeeded && !state.sensorEnabled) {
         elements.sensorBtn.classList.remove("hidden");
-        elements.recalibrateBtn.classList.add("hidden");
+        elements.menuRecalibrateBtn.classList.add("hidden");
         elements.sensorNote.classList.add("warning");
-        elements.sensorNote.textContent = "Falls nichts passiert: Bewegung einmal aktivieren.";
+        elements.sensorNote.textContent = "Falls nichts passiert: im Menue auf Bewegung aktivieren tippen.";
         return;
       }
 
@@ -1362,12 +1405,12 @@
       }
 
       if (state.sensorEnabled) {
-        elements.recalibrateBtn.classList.remove("hidden");
+        elements.menuRecalibrateBtn.classList.remove("hidden");
         elements.sensorNote.textContent = vibrationSupported
           ? SENSOR_HINT
           : SENSOR_HINT + " Vibration wird von diesem Browser nicht unterstuetzt, daher gibt es Tonfeedback.";
       } else {
-        elements.recalibrateBtn.classList.add("hidden");
+        elements.menuRecalibrateBtn.classList.add("hidden");
         elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Nutze die Buttons fuer Richtig/Falsch.";
       }
     }
@@ -1702,9 +1745,9 @@
     elements.skipWordBtn.addEventListener("click", () => nextWord("skip"));
     elements.pauseBtn.addEventListener("click", togglePause);
     elements.resumeBtn.addEventListener("click", resumeRound);
-    elements.restartBtn.addEventListener("click", resetToStart);
+    elements.menuHomeBtn.addEventListener("click", resetToStart);
     elements.sensorBtn.addEventListener("click", enableMotion);
-    elements.recalibrateBtn.addEventListener("click", () => calibrateTilt(900));
+    elements.menuRecalibrateBtn.addEventListener("click", () => calibrateTilt(900));
     elements.playAgainBtn.addEventListener("click", replayCurrentCategory);
     elements.resultsHomeBtn.addEventListener("click", resetToStart);
     elements.roundSecondsSelect.addEventListener("change", applySettingsFromUi);
