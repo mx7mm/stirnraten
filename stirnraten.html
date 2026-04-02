@@ -667,11 +667,11 @@
 
       <div class="stack">
         <div class="sensor-ui">
-          <div class="sensor-note" id="sensor-note">Nach unten kippen = richtig. Nach oben kippen = skip.</div>
+          <div class="sensor-note" id="sensor-note">Nach vorne kippen = richtig. Nach hinten kippen = falsch.</div>
           <button class="secondary hidden" id="sensor-btn">Bewegung aktivieren</button>
         </div>
         <button class="success" id="next-word-btn">Richtig</button>
-        <button class="secondary" id="skip-word-btn">Ueberspringen</button>
+        <button class="secondary" id="skip-word-btn">Falsch / ueberspringen</button>
         <button class="secondary" id="restart-btn">Neue Kategorie</button>
       </div>
     </section>
@@ -761,7 +761,7 @@
       skipCount: 0
     };
 
-    const SENSOR_HINT = "Nach unten kippen = richtig. Nach oben kippen oder Ueberspringen-Button = skip.";
+    const SENSOR_HINT = "Nach vorne kippen = richtig. Nach hinten kippen oder Falsch-Button = skip.";
 
     const elements = {
       flash: document.getElementById("flash"),
@@ -971,7 +971,7 @@
       if (state.sensorEnabled) {
         elements.sensorNote.textContent = SENSOR_HINT;
       } else {
-        elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Du kannst unten tippen.";
+        elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Nutze die Buttons fuer Richtig/Falsch.";
       }
     }
 
@@ -1012,11 +1012,11 @@
       if (kind === "correct") {
         state.correctCount += 1;
         flashScreen("rgba(51, 196, 125, 0.82)");
-        vibrate(70);
+        vibrate([120]);
       } else {
         state.skipCount += 1;
         flashScreen("rgba(255, 87, 87, 0.8)");
-        vibrate([30, 40, 30]);
+        vibrate([40, 70, 40]);
       }
 
       state.currentIndex += 1;
@@ -1049,9 +1049,9 @@
       const delta = beta - state.neutralBeta;
 
       let candidate = "";
-      if (delta > 20) {
+      if (delta < -18) {
         candidate = "correct";
-      } else if (delta < -19) {
+      } else if (delta > 18) {
         candidate = "skip";
       }
 
