@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Stirnraten</title>
+  <style>
+    :root {
+      --bg: #131722;
+      --bg-deep: #0c1018;
+      --surface: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: rgba(248, 250, 252, 0.72);
+      --line: rgba(255, 255, 255, 0.12);
+      --radius: 32px;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      --theme-start: #ff7a18;
+      --theme-end: #ffb347;
+      --theme-ink: #ffffff;
+      --flash: transparent;
+      --danger: #ff5f6d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100dvh;
+    }
+
+    body {
+      font-family: "Avenir Next", "SF Pro Display", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 20%),
+        radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.06), transparent 18%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(24px);
+      opacity: 0.7;
+      z-index: 0;
+    }
+
+    body::before {
+      width: 240px;
+      height: 240px;
+      top: -60px;
+      right: -40px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    body::after {
+      width: 280px;
+      height: 280px;
+      left: -90px;
+      bottom: -70px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .flash {
+      position: fixed;
+      inset: 0;
+      background: var(--flash);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 30;
+      transition: opacity 0.12s ease;
+    }
+
+    body.flash-on .flash {
+      opacity: 1;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+      position: relative;
+      z-index: 1;
+    }
+
+    .screen {
+      min-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom)));
+      display: grid;
+      align-content: center;
+      gap: 18px;
+      animation: fade-in 0.25s ease;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .intro {
+      padding: 24px 8px 8px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: clamp(2.8rem, 11vw, 4.8rem);
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 16px auto 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.6;
+      max-width: 24rem;
+    }
+
+    .fullscreen-note {
+      margin-top: 18px;
+      color: rgba(248, 250, 252, 0.64);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .categories {
+      display: grid;
+      gap: 14px;
+      padding-top: 10px;
+    }
+
+    .custom-deck {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .custom-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .custom-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .custom-help {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .custom-input {
+      width: 100%;
+      min-height: 124px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      font: inherit;
+      resize: vertical;
+      outline: none;
+    }
+
+    .custom-input::placeholder {
+      color: rgba(248, 250, 252, 0.46);
+    }
+
+    .custom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .custom-count {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.9rem;
+    }
+
+    .category {
+      width: 100%;
+      border: 0;
+      background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 30%),
+        linear-gradient(135deg, var(--card-start), var(--card-end));
+      color: #ffffff;
+      border-radius: 26px;
+      padding: 22px;
+      text-align: left;
+      cursor: pointer;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 16px 30px rgba(0, 0, 0, 0.22);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .category:hover,
+    .category:focus-visible {
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 20px 36px rgba(0, 0, 0, 0.28);
+      outline: none;
+    }
+
+    .category::after {
+      content: "";
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      right: -10px;
+      top: -18px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .category strong,
+    .category span {
+      position: relative;
+      z-index: 1;
+      display: block;
+    }
+
+    .category strong {
+      font-size: 1.14rem;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .category span {
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.95rem;
+    }
+
+    .play {
+      padding: 16px;
+      gap: 18px;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        rgba(255, 255, 255, 0.04);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 6px 0;
+    }
+
+    .meta {
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 0.92rem;
+      margin-top: 4px;
+    }
+
+    .timer {
+      font-size: 1.06rem;
+      font-weight: 800;
+      color: #ffffff;
+      padding: 14px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      min-width: 82px;
+      text-align: center;
+    }
+
+    .word-card {
+      min-height: 58vh;
+      display: grid;
+      place-items: center;
+      padding: 34px 28px;
+      border-radius: 36px;
+      background:
+        radial-gradient(circle at 25% 15%, rgba(255, 255, 255, 0.22), transparent 24%),
+        radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.16), transparent 22%),
+        linear-gradient(180deg, var(--theme-start), var(--theme-end));
+      text-align: center;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 20px 44px rgba(0, 0, 0, 0.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .word-card::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      pointer-events: none;
+    }
+
+    .word-card::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      bottom: -80px;
+      right: -60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .word {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(3rem, 13vw, 6.2rem);
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+      font-weight: 800;
+      text-wrap: balance;
+      max-width: 10ch;
+      color: var(--theme-ink);
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    .hint {
+      position: relative;
+      z-index: 1;
+      font-size: 0.98rem;
+      color: rgba(255, 255, 255, 0.88);
+      line-height: 1.5;
+      margin-top: 14px;
+    }
+
+    .sensor-ui,
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .sensor-note {
+      padding: 14px 16px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.92rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .sensor-note.warning {
+      background: rgba(255, 214, 102, 0.12);
+      border-color: rgba(255, 214, 102, 0.2);
+      color: rgba(255, 243, 214, 0.92);
+    }
+
+    button {
+      font: inherit;
+      border: 0;
+      border-radius: 24px;
+      padding: 19px 18px;
+      cursor: pointer;
+      transition: transform 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .success {
+      background: #ffffff;
+      color: #111827;
+      font-weight: 700;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-weight: 700;
+    }
+
+    .countdown {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(8, 10, 16, 0.78);
+      backdrop-filter: blur(8px);
+      border-radius: inherit;
+      z-index: 10;
+    }
+
+    .countdown-number {
+      font-size: clamp(4rem, 20vw, 8rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.08em;
+      color: #ffffff;
+    }
+
+    .results {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(8, 10, 16, 0.84);
+      backdrop-filter: blur(10px);
+      border-radius: inherit;
+      z-index: 11;
+    }
+
+    .results-card {
+      width: min(100%, 420px);
+      padding: 26px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.26);
+    }
+
+    .results-card h3 {
+      margin: 14px 0 10px;
+      font-size: clamp(2rem, 8vw, 3rem);
+      line-height: 0.92;
+      letter-spacing: -0.05em;
+    }
+
+    .results-subtitle {
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 22px 0 18px;
+    }
+
+    .stat {
+      padding: 18px 14px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 2rem;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.92rem;
+    }
+
+    .feedback-correct .word-card {
+      transform: scale(1.015);
+    }
+
+    .feedback-skip .word-card {
+      transform: scale(0.99);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        padding:
+          max(10px, env(safe-area-inset-top))
+          max(10px, env(safe-area-inset-right))
+          max(10px, env(safe-area-inset-bottom))
+          max(10px, env(safe-area-inset-left));
+      }
+
+      .word-card {
+        min-height: 50vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="flash" id="flash"></div>
+  <main class="app">
+    <section class="screen" id="start-screen">
+      <div class="intro">
+        <div class="eyebrow">Stirnraten</div>
+        <h1>Schnell loslegen</h1>
+        <p class="subtitle">Kategorie antippen, Handy weitergeben, spielen.</p>
+        <p class="fullscreen-note">Beim Start wechselt das Spiel wenn moeglich direkt in den Vollbildmodus.</p>
+      </div>
+
+      <div class="categories" id="categories"></div>
+
+      <section class="card custom-deck">
+        <div class="custom-header">
+          <div>
+            <div class="eyebrow">Eigene Begriffe</div>
+            <p class="custom-title">Eigenes Deck starten</p>
+          </div>
+        </div>
+        <p class="custom-help">Ein Begriff pro Zeile. Perfekt fuer Insider, Themenabende oder schnelle eigene Kategorien.</p>
+        <textarea class="custom-input" id="custom-words" placeholder="Taylor Swift&#10;Espresso Martini&#10;SpongeBob"></textarea>
+        <div class="custom-row">
+          <span class="custom-count" id="custom-count">0 Begriffe</span>
+          <button class="success" id="custom-start-btn" disabled>Eigenes Deck starten</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="screen card play hidden" id="game-screen">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow">Kategorie</div>
+          <h2 id="category-title">Alltag</h2>
+          <p class="meta" id="progress-text">1 von 12</p>
+        </div>
+        <div class="timer" id="timer">60</div>
+      </div>
+
+      <div class="word-card" id="word-card">
+        <div>
+          <div class="word" id="word-display">Bereit?</div>
+          <p class="hint" id="hint-display">Lege direkt los.</p>
+        </div>
+      </div>
+
+      <div class="countdown hidden" id="countdown">
+        <div class="countdown-number" id="countdown-number">3</div>
+      </div>
+
+      <div class="results hidden" id="results">
+        <div class="results-card">
+          <div class="eyebrow">Runde vorbei</div>
+          <h3 id="results-title">Stark</h3>
+          <p class="results-subtitle" id="results-subtitle">Deine Runde ist fertig.</p>
+          <div class="results-grid">
+            <div class="stat">
+              <strong id="correct-count">0</strong>
+              <span>Richtig</span>
+            </div>
+            <div class="stat">
+              <strong id="skip-count">0</strong>
+              <span>Uebersprungen</span>
+            </div>
+          </div>
+          <div class="stack">
+            <button class="success" id="play-again-btn">Nochmal spielen</button>
+            <button class="secondary" id="results-home-btn">Andere Kategorie</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="sensor-ui">
+          <div class="sensor-note" id="sensor-note">Nach unten kippen = richtig. Nach oben kippen = skip.</div>
+          <button class="secondary hidden" id="sensor-btn">Bewegung aktivieren</button>
+        </div>
+        <button class="success" id="next-word-btn">Richtig / weiter</button>
+        <button class="secondary" id="restart-btn">Neue Kategorie</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const categories = {
+      Alltag: {
+        colors: ["#ff7a18", "#ffb347"],
+        words: [
+          "Kuehlschrank", "Fernbedienung", "Regenschirm", "Kopfkissen", "Zahnbuerste",
+          "Rucksack", "Toaster", "Schluessel", "Sonnenbrille", "Wasserflasche",
+          "Waschmaschine", "Fahrradhelm", "Ladekabel", "Pizzakarton", "Taschenlampe",
+          "Kaffeefilter", "Einkaufswagen", "Reisepass"
+        ]
+      },
+      Tiere: {
+        colors: ["#00c6a7", "#1e90ff"],
+        words: [
+          "Pinguin", "Giraffe", "Krokodil", "Panda", "Faultier", "Oktopus",
+          "Eichhoernchen", "Pfau", "Koala", "Seepferdchen", "Fledermaus", "Walross",
+          "Axolotl", "Chamaeleon", "Erdmaennchen", "Igel", "Otter", "Alpaka"
+        ]
+      },
+      Filme: {
+        colors: ["#7b61ff", "#b86bff"],
+        words: [
+          "Titanic", "Avatar", "Batman", "Shrek", "Frozen", "Star Wars",
+          "Harry Potter", "Toy Story", "Matrix", "Findet Nemo", "Jurassic Park", "Barbie",
+          "Inception", "Gladiator", "Der Pate", "Minions", "Interstellar", "Joker"
+        ]
+      },
+      Essen: {
+        colors: ["#ff416c", "#ff4b2b"],
+        words: [
+          "Pizza", "Lasagne", "Popcorn", "Sushi", "Croissant", "Donut",
+          "Wassermelone", "Spaghetti", "Brezel", "Pfannkuchen", "Mango", "Pommes",
+          "Tiramisu", "Currywurst", "Guacamole", "Ramen", "Mozzarella", "Cheesecake"
+        ]
+      },
+      Stars: {
+        colors: ["#ff9966", "#ff5e62"],
+        words: [
+          "Taylor Swift", "Billie Eilish", "Zendaya", "Drake", "Rihanna", "Adele",
+          "Harry Styles", "Leonardo DiCaprio", "Beyonce", "Bad Bunny", "Dua Lipa", "Timothee Chalamet",
+          "Ed Sheeran", "Margot Robbie", "The Weeknd", "Travis Scott", "Lady Gaga", "Shakira"
+        ]
+      },
+      Serien: {
+        colors: ["#36d1dc", "#5b86e5"],
+        words: [
+          "Stranger Things", "Friends", "Breaking Bad", "Wednesday", "The Office", "Dark",
+          "Game of Thrones", "The Bear", "Euphoria", "Bridgerton", "Black Mirror", "The Last of Us",
+          "Narcos", "Lupin", "How I Met Your Mother", "Sherlock", "Suits", "The Crown"
+        ]
+      },
+      Orte: {
+        colors: ["#11998e", "#38ef7d"],
+        words: [
+          "Paris", "Berlin", "New York", "Tokio", "Mallorca", "Santorini",
+          "Eiffelturm", "Alpen", "Sahara", "Disneyland", "Venedig", "Sydney",
+          "London", "Bangkok", "Bali", "Rom", "Island", "Dubai"
+        ]
+      }
+    };
+
+    const state = {
+      selectedCategory: "",
+      deck: [],
+      currentWord: "",
+      currentIndex: 0,
+      roundSeconds: 60,
+      timeLeft: 60,
+      timerId: null,
+      sensorEnabled: false,
+      sensorPermissionNeeded: false,
+      tiltLocked: false,
+      countdownActive: false,
+      roundActive: false,
+      lastTiltAt: 0,
+      smoothedBeta: 0,
+      correctCount: 0,
+      skipCount: 0
+    };
+
+    const elements = {
+      flash: document.getElementById("flash"),
+      categories: document.getElementById("categories"),
+      startScreen: document.getElementById("start-screen"),
+      gameScreen: document.getElementById("game-screen"),
+      categoryTitle: document.getElementById("category-title"),
+      progressText: document.getElementById("progress-text"),
+      timer: document.getElementById("timer"),
+      wordDisplay: document.getElementById("word-display"),
+      hintDisplay: document.getElementById("hint-display"),
+      sensorNote: document.getElementById("sensor-note"),
+      sensorBtn: document.getElementById("sensor-btn"),
+      nextWordBtn: document.getElementById("next-word-btn"),
+      restartBtn: document.getElementById("restart-btn"),
+      countdown: document.getElementById("countdown"),
+      countdownNumber: document.getElementById("countdown-number"),
+      results: document.getElementById("results"),
+      resultsTitle: document.getElementById("results-title"),
+      resultsSubtitle: document.getElementById("results-subtitle"),
+      correctCount: document.getElementById("correct-count"),
+      skipCount: document.getElementById("skip-count"),
+      playAgainBtn: document.getElementById("play-again-btn"),
+      resultsHomeBtn: document.getElementById("results-home-btn"),
+      customWords: document.getElementById("custom-words"),
+      customCount: document.getElementById("custom-count"),
+      customStartBtn: document.getElementById("custom-start-btn")
+    };
+
+    function syncFullscreenState() {
+      document.body.classList.toggle("is-fullscreen", Boolean(document.fullscreenElement));
+    }
+
+    async function enterFullscreen() {
+      const target = document.documentElement;
+      if (document.fullscreenElement || !target.requestFullscreen) {
+        syncFullscreenState();
+        return Boolean(document.fullscreenElement || !target.requestFullscreen);
+      }
+
+      try {
+        await target.requestFullscreen({ navigationUI: "hide" });
+        syncFullscreenState();
+        return true;
+      } catch (error) {
+        syncFullscreenState();
+        return false;
+      }
+    }
+
+    function shuffle(list) {
+      const copy = [...list];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function parseCustomWords() {
+      return elements.customWords.value
+        .split("\n")
+        .map((word) => word.trim())
+        .filter(Boolean);
+    }
+
+    function updateCustomDeckUi() {
+      const words = parseCustomWords();
+      const uniqueCount = new Set(words).size;
+      elements.customCount.textContent = uniqueCount + (uniqueCount === 1 ? " Begriff" : " Begriffe");
+      elements.customStartBtn.disabled = uniqueCount < 3;
+    }
+
+    function renderCategories() {
+      elements.categories.innerHTML = "";
+      Object.entries(categories).forEach(([name, category]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "category";
+        button.style.setProperty("--card-start", category.colors[0]);
+        button.style.setProperty("--card-end", category.colors[1]);
+        button.innerHTML = "<strong>" + name + "</strong><span>" + category.words.length + " Begriffe</span>";
+        button.addEventListener("click", () => startGame(name));
+        elements.categories.appendChild(button);
+      });
+    }
+
+    async function startCustomGame() {
+      const words = [...new Set(parseCustomWords())];
+      if (words.length < 3) {
+        updateCustomDeckUi();
+        return;
+      }
+
+      const customCategory = {
+        colors: ["#f857a6", "#ff5858"],
+        words
+      };
+
+      categories.EigenesDeck = customCategory;
+      await startGame("EigenesDeck", true);
+    }
+
+    function applyTheme(categoryName) {
+      const theme = categories[categoryName];
+      if (!theme) {
+        return;
+      }
+
+      document.documentElement.style.setProperty("--theme-start", theme.colors[0]);
+      document.documentElement.style.setProperty("--theme-end", theme.colors[1]);
+    }
+
+    function updateProgress() {
+      const shownIndex = Math.min(state.currentIndex + 1, state.deck.length);
+      elements.progressText.textContent = shownIndex + " von " + state.deck.length;
+      elements.timer.textContent = state.timeLeft;
+    }
+
+    function showWord() {
+      state.currentWord = state.deck[state.currentIndex] || "";
+      if (!state.currentWord) {
+        finishGame();
+        return;
+      }
+
+      elements.wordDisplay.textContent = state.currentWord;
+      elements.hintDisplay.textContent = "Nach unten kippen = richtig. Nach oben kippen = skip.";
+      updateProgress();
+    }
+
+    function flashScreen(color) {
+      document.documentElement.style.setProperty("--flash", color);
+      document.body.classList.add("flash-on");
+      window.setTimeout(() => {
+        document.body.classList.remove("flash-on");
+      }, 180);
+    }
+
+    function vibrate(pattern) {
+      if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    function tick() {
+      state.timeLeft -= 1;
+      elements.timer.textContent = state.timeLeft;
+      if (state.timeLeft <= 0) {
+        finishGame();
+      }
+    }
+
+    function startTimer() {
+      clearInterval(state.timerId);
+      state.timerId = window.setInterval(tick, 1000);
+      state.roundActive = true;
+      elements.nextWordBtn.disabled = false;
+    }
+
+    function stopTimer() {
+      clearInterval(state.timerId);
+      state.timerId = null;
+      state.roundActive = false;
+    }
+
+    function updateSensorUi() {
+      if (state.sensorPermissionNeeded && !state.sensorEnabled) {
+        elements.sensorBtn.classList.remove("hidden");
+        elements.sensorNote.classList.add("warning");
+        elements.sensorNote.textContent = "Falls nichts passiert: Bewegung einmal aktivieren.";
+        return;
+      }
+
+      elements.sensorBtn.classList.add("hidden");
+      elements.sensorNote.classList.remove("warning");
+
+      if (state.sensorEnabled) {
+        elements.sensorNote.textContent = "Nach unten kippen = richtig. Nach oben kippen = skip.";
+      } else {
+        elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Du kannst unten tippen.";
+      }
+    }
+
+    async function enableMotion() {
+      try {
+        if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+          state.sensorPermissionNeeded = true;
+          const permission = await DeviceOrientationEvent.requestPermission();
+          state.sensorEnabled = permission === "granted";
+          state.sensorPermissionNeeded = false;
+        } else if ("ondeviceorientation" in window) {
+          state.sensorEnabled = true;
+          state.sensorPermissionNeeded = false;
+        } else {
+          state.sensorEnabled = false;
+          state.sensorPermissionNeeded = false;
+        }
+      } catch (error) {
+        state.sensorEnabled = false;
+        state.sensorPermissionNeeded = true;
+      }
+
+      updateSensorUi();
+    }
+
+    function pulseFeedback(kind) {
+      elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
+      void elements.gameScreen.offsetWidth;
+      elements.gameScreen.classList.add(kind === "correct" ? "feedback-correct" : "feedback-skip");
+    }
+
+    function nextWord(kind = "correct") {
+      if (!state.roundActive || state.countdownActive) {
+        return;
+      }
+
+      pulseFeedback(kind);
+      if (kind === "correct") {
+        state.correctCount += 1;
+        flashScreen("rgba(51, 196, 125, 0.82)");
+        vibrate(70);
+      } else {
+        state.skipCount += 1;
+        flashScreen("rgba(255, 87, 87, 0.8)");
+        vibrate([30, 40, 30]);
+      }
+
+      state.currentIndex += 1;
+      showWord();
+    }
+
+    function handleOrientation(event) {
+      if (!state.sensorEnabled || !state.selectedCategory || !state.roundActive || state.countdownActive) {
+        return;
+      }
+
+      const rawBeta = typeof event.beta === "number" ? event.beta : null;
+      if (rawBeta === null) {
+        return;
+      }
+
+      state.smoothedBeta = state.smoothedBeta * 0.55 + rawBeta * 0.45;
+      const beta = state.smoothedBeta;
+
+      const now = Date.now();
+      if (now - state.lastTiltAt < 750) {
+        return;
+      }
+
+      if (!state.tiltLocked && beta > 28) {
+        state.tiltLocked = true;
+        state.lastTiltAt = now;
+        nextWord("correct");
+        return;
+      }
+
+      if (!state.tiltLocked && beta < -22) {
+        state.tiltLocked = true;
+        state.lastTiltAt = now;
+        nextWord("skip");
+        return;
+      }
+
+      if (beta > -6 && beta < 10) {
+        state.tiltLocked = false;
+      }
+    }
+
+    async function runCountdown() {
+      state.countdownActive = true;
+      elements.countdown.classList.remove("hidden");
+
+      for (const step of ["3", "2", "1"]) {
+        elements.countdownNumber.textContent = step;
+        await new Promise((resolve) => window.setTimeout(resolve, 700));
+      }
+
+      elements.countdownNumber.textContent = "Los";
+      await new Promise((resolve) => window.setTimeout(resolve, 450));
+      elements.countdown.classList.add("hidden");
+      state.countdownActive = false;
+    }
+
+    async function startGame(categoryName, isCustom = false) {
+      state.selectedCategory = categoryName;
+      state.deck = shuffle(categories[categoryName].words);
+      state.currentIndex = 0;
+      state.timeLeft = state.roundSeconds;
+      state.tiltLocked = false;
+      state.lastTiltAt = 0;
+      state.smoothedBeta = 0;
+      state.correctCount = 0;
+      state.skipCount = 0;
+
+      applyTheme(categoryName);
+      elements.categoryTitle.textContent = isCustom ? "Eigenes Deck" : categoryName;
+
+      const fullscreenOk = await enterFullscreen();
+      elements.startScreen.classList.add("hidden");
+      elements.gameScreen.classList.remove("hidden");
+      elements.results.classList.add("hidden");
+
+      await enableMotion();
+      showWord();
+      updateProgress();
+
+      if (!fullscreenOk) {
+        elements.sensorNote.classList.add("warning");
+        elements.sensorNote.textContent = "Vollbild wurde blockiert. Du kannst trotzdem direkt spielen.";
+      }
+
+      await runCountdown();
+      startTimer();
+    }
+
+    function showResults() {
+      elements.correctCount.textContent = state.correctCount;
+      elements.skipCount.textContent = state.skipCount;
+
+      if (state.correctCount >= 10) {
+        elements.resultsTitle.textContent = "Mega";
+        elements.resultsSubtitle.textContent = "Das war eine richtig starke Runde.";
+      } else if (state.correctCount >= 5) {
+        elements.resultsTitle.textContent = "Stark";
+        elements.resultsSubtitle.textContent = "Saubere Runde mit gutem Tempo.";
+      } else {
+        elements.resultsTitle.textContent = "Nochmal";
+        elements.resultsSubtitle.textContent = "Noch eine Runde und ihr seid direkt drin.";
+      }
+
+      elements.results.classList.remove("hidden");
+    }
+
+    function finishGame() {
+      stopTimer();
+      state.countdownActive = false;
+      elements.countdown.classList.add("hidden");
+      elements.wordDisplay.textContent = "Fertig";
+      elements.hintDisplay.textContent = "Tippe auf \"Neue Kategorie\" fuer die naechste Runde.";
+      elements.progressText.textContent = state.selectedCategory;
+      elements.timer.textContent = "00";
+      elements.nextWordBtn.disabled = true;
+      showResults();
+    }
+
+    function replayCurrentCategory() {
+      if (!state.selectedCategory) {
+        resetToStart();
+        return;
+      }
+
+      stopTimer();
+      state.deck = shuffle(categories[state.selectedCategory].words);
+      state.currentIndex = 0;
+      state.timeLeft = state.roundSeconds;
+      state.tiltLocked = false;
+      state.lastTiltAt = 0;
+      state.smoothedBeta = 0;
+      state.correctCount = 0;
+      state.skipCount = 0;
+      state.countdownActive = false;
+
+      elements.results.classList.add("hidden");
+      elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
+      showWord();
+      updateProgress();
+      runCountdown().then(() => {
+        startTimer();
+      });
+    }
+
+    function resetToStart() {
+      stopTimer();
+      state.selectedCategory = "";
+      state.deck = [];
+      state.currentWord = "";
+      state.currentIndex = 0;
+      state.timeLeft = state.roundSeconds;
+      state.tiltLocked = false;
+      state.lastTiltAt = 0;
+      state.countdownActive = false;
+      state.smoothedBeta = 0;
+      state.correctCount = 0;
+      state.skipCount = 0;
+
+      elements.nextWordBtn.disabled = false;
+      elements.wordDisplay.textContent = "Bereit?";
+      elements.hintDisplay.textContent = "Lege direkt los.";
+      elements.timer.textContent = state.roundSeconds;
+      elements.progressText.textContent = "1 von 12";
+      elements.startScreen.classList.remove("hidden");
+      elements.gameScreen.classList.add("hidden");
+      elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
+      elements.countdown.classList.add("hidden");
+      elements.results.classList.add("hidden");
+      updateSensorUi();
+    }
+
+    elements.nextWordBtn.addEventListener("click", () => nextWord("correct"));
+    elements.restartBtn.addEventListener("click", resetToStart);
+    elements.sensorBtn.addEventListener("click", enableMotion);
+    elements.playAgainBtn.addEventListener("click", replayCurrentCategory);
+    elements.resultsHomeBtn.addEventListener("click", resetToStart);
+    elements.customWords.addEventListener("input", updateCustomDeckUi);
+    elements.customStartBtn.addEventListener("click", startCustomGame);
+    window.addEventListener("deviceorientation", handleOrientation);
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+
+    renderCategories();
+    elements.timer.textContent = state.roundSeconds;
+    updateSensorUi();
+    updateCustomDeckUi();
+    syncFullscreenState();
+  </script>
+</body>
+</html>
