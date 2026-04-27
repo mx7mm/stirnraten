@@ -1245,7 +1245,22 @@
         button.style.setProperty("--card-start", category.colors[0]);
         button.style.setProperty("--card-end", category.colors[1]);
         button.innerHTML = "<strong>" + name + "</strong><span>" + category.words.length + " Begriffe</span>";
-        button.addEventListener("click", () => startGame(name));
+        button.addEventListener("click", async () => {
+          // iOS Safari: permission MUST be first in click handler — no code before this
+          if (typeof DeviceOrientationEvent !== "undefined" &&
+              typeof DeviceOrientationEvent.requestPermission === "function") {
+            try {
+              const perm = await DeviceOrientationEvent.requestPermission();
+              state.sensorEnabled = perm === "granted";
+            } catch (e) {
+              state.sensorEnabled = false;
+            }
+          } else {
+            state.sensorEnabled = true; // Android / desktop — optimistic
+          }
+          state.sensorPermissionNeeded = !state.sensorEnabled;
+          await startGame(name);
+        });
         elements.categories.appendChild(button);
       });
     }
@@ -1735,10 +1750,7 @@
     }
 
     async function startGame(categoryName) {
-      // 1. Request motion permission FIRST — must happen before any other await
-      //    so iOS treats it as directly triggered by user gesture
-      await requestMotionPermission();
-
+      // sensorEnabled already set in click handler before this call
       applySettingsFromUi();
       state.selectedCategory = categoryName;
       state.deck = shuffle(categories[categoryName].words);
