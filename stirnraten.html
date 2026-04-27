@@ -1550,26 +1550,33 @@
       }
     }
 
-    async function enableMotion() {
-      try {
-        if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-          state.sensorPermissionNeeded = true;
-          const permission = await DeviceOrientationEvent.requestPermission();
-          state.sensorEnabled = permission === "granted";
-          state.sensorPermissionNeeded = false;
-        } else if ("ondeviceorientation" in window) {
-          state.sensorEnabled = true;
-          state.sensorPermissionNeeded = false;
-        } else {
+    // Request iOS motion permission — must be called directly in user gesture handler
+    async function requestMotionPermission() {
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+        try {
+          const perm = await DeviceOrientationEvent.requestPermission();
+          state.sensorEnabled = perm === "granted";
+        } catch (e) {
           state.sensorEnabled = false;
-          state.sensorPermissionNeeded = false;
         }
-      } catch (error) {
-        state.sensorEnabled = false;
-        state.sensorPermissionNeeded = true;
+        state.sensorPermissionNeeded = !state.sensorEnabled;
+      } else {
+        // Non-iOS: mark as enabled optimistically; handleOrientation confirms
+        state.sensorEnabled = true;
+        state.sensorPermissionNeeded = false;
       }
+    }
 
+    async function enableMotion() {
+      // Already handled in startGame before fullscreen
       updateSensorUi();
+    }
+
+    function showSensorFallback() {
+      elements.sensorNote.classList.add("hidden");
+      elements.sensorNote.textContent = "";
+      elements.actionRow.classList.remove("hidden");
+      elements.actionRow.removeAttribute("aria-hidden");
     }
 
     function pulseFeedback(kind) {
@@ -1608,10 +1615,13 @@
         return;
       }
 
-      // Dynamically enable sensor if events are firing but permission detection failed
-      if (!state.sensorEnabled && state.selectedCategory) {
+      // Events arrived — sensor works, even if detection said otherwise
+      if (!state.sensorEnabled) {
         state.sensorEnabled = true;
         state.sensorPermissionNeeded = false;
+        // Hide manual buttons since tilt works
+        elements.actionRow.classList.add("hidden");
+        elements.actionRow.setAttribute("aria-hidden", "true");
         updateSensorUi();
       }
 
@@ -1725,6 +1735,10 @@
     }
 
     async function startGame(categoryName) {
+      // 1. Request motion permission FIRST — must happen before any other await
+      //    so iOS treats it as directly triggered by user gesture
+      await requestMotionPermission();
+
       applySettingsFromUi();
       state.selectedCategory = categoryName;
       state.deck = shuffle(categories[categoryName].words);
@@ -1753,41 +1767,46 @@
       elements.startScreen.classList.add("hidden");
       elements.gameScreen.classList.remove("hidden");
       elements.results.classList.add("hidden");
+      elements.actionRow.classList.add("hidden");
+      elements.actionRow.setAttribute("aria-hidden", "true");
       elements.pauseBtn.disabled = true;
       updatePauseUi();
 
       await enableMotion();
+
       if (state.sensorEnabled) {
-        await calibrateTilt(900);
+        // Calibrate tilt; if no events arrive within 3s, fall back to buttons
+        const calResult = await Promise.race([
+          calibrateTilt(900).then(() => "done"),
+          new Promise(resolve => window.setTimeout(() => resolve("timeout"), 3500))
+        ]);
+        if (calResult === "timeout" && !state.sensorEnabled) {
+          showSensorFallback();
+        }
       } else {
-        // Wait 3s for orientation events to fire (some browsers report no support but do fire)
+        // Non-iOS path: give 2s for events to arrive
         await new Promise((resolve) => {
-          const timeout = window.setTimeout(() => {
-            if (!state.sensorEnabled) {
-              elements.sensorNote.classList.add("hidden");
-              elements.sensorNote.textContent = "";
-              elements.actionRow.classList.remove("hidden");
-              elements.actionRow.removeAttribute("aria-hidden");
-            }
+          const t = window.setTimeout(() => {
+            if (!state.sensorEnabled) showSensorFallback();
             resolve();
-          }, 3000);
-          // If sensor activates before timeout, clear it
-          const check = window.setInterval(() => {
+          }, 2000);
+          const poll = window.setInterval(() => {
             if (state.sensorEnabled) {
-              window.clearTimeout(timeout);
-              window.clearInterval(check);
+              window.clearTimeout(t);
+              window.clearInterval(poll);
               resolve();
             }
-          }, 200);
+          }, 150);
         });
       }
+
       showWord();
       showTiltHintOnce();
       updateProgress();
 
       if (!fullscreenOk) {
-        elements.sensorNote.classList.add("warning");
-        elements.sensorNote.textContent = "Vollbild wurde blockiert. Du kannst trotzdem direkt spielen.";
+        elements.sensorNote.classList.remove("warning");
+        elements.sensorNote.classList.add("hidden");
       }
 
       await runCountdown();
