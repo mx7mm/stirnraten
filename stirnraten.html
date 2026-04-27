@@ -1544,8 +1544,8 @@
           return;
         }
         elements.sensorNote.classList.remove("hidden");
-        elements.sensorNote.classList.add("warning");
-        elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Bitte anderes Geraet oder Browser nutzen.";
+        elements.sensorNote.classList.remove("warning");
+        elements.sensorNote.textContent = "Kippen wird initialisiert ...";
       }
     }
 
@@ -1605,6 +1605,13 @@
       const rawBeta = typeof event.beta === "number" ? event.beta : null;
       if (rawBeta === null) {
         return;
+      }
+
+      // Dynamically enable sensor if events are firing but permission detection failed
+      if (!state.sensorEnabled && state.selectedCategory) {
+        state.sensorEnabled = true;
+        state.sensorPermissionNeeded = false;
+        updateSensorUi();
       }
 
       if (state.smoothedBeta === 0) {
