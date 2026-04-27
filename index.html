@@ -6,427 +6,463 @@
   <title>Spielbibliothek</title>
   <style>
     :root {
-      --bg: #edf1ff;
-      --bg-soft: #f9fbff;
-      --text: #16181d;
-      --muted: #626673;
-      --line: rgba(56, 70, 108, 0.18);
-      --radius: 30px;
-      --shadow: 0 24px 52px rgba(36, 44, 72, 0.14);
-      --shadow-soft: 0 10px 24px rgba(36, 44, 72, 0.08);
+      --bg: #f2f2f7;
+      --surface: #ffffff;
+      --text: #1c1c1e;
+      --secondary: #3c3c43;
+      --tertiary: #8e8e93;
+      --fill: rgba(120,120,128,0.12);
+      --fill-2: rgba(120,120,128,0.08);
+      --separator: rgba(60,60,67,0.12);
+      --blue: #007aff;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      margin: 0;
       min-height: 100dvh;
+      background: var(--bg);
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
       color: var(--text);
-      letter-spacing: -0.011em;
-      background:
-        radial-gradient(circle at 94% 3%, rgba(88, 111, 255, 0.18), transparent 34%),
-        radial-gradient(circle at 4% 96%, rgba(255, 123, 165, 0.14), transparent 32%),
-        radial-gradient(circle at 44% 14%, rgba(126, 206, 255, 0.14), transparent 30%),
-        linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
       -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
+      letter-spacing: -0.011em;
     }
 
-    body::before, body::after {
-      content: "";
-      position: fixed;
-      border-radius: 999px;
-      pointer-events: none;
-      filter: blur(38px);
-      opacity: 0.44;
-      z-index: 0;
-      animation: drift 18s ease-in-out infinite;
-    }
-
-    body::before {
-      width: 320px; height: 320px;
-      top: -110px; right: -80px;
-      background: rgba(76, 102, 255, 0.28);
-    }
-
-    body::after {
-      width: 360px; height: 360px;
-      left: -150px; bottom: -140px;
-      background: rgba(255, 122, 166, 0.22);
-      animation-delay: -8s;
-    }
-
-    .app {
-      width: min(100%, 880px);
-      margin: 0 auto;
+    /* NAV */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(242,242,247,0.82);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 0.5px solid var(--separator);
       padding:
-        max(28px, env(safe-area-inset-top))
-        max(18px, env(safe-area-inset-right))
-        max(40px, env(safe-area-inset-bottom))
-        max(18px, env(safe-area-inset-left));
-      position: relative;
-      z-index: 1;
+        max(12px, env(safe-area-inset-top))
+        max(20px, env(safe-area-inset-right))
+        12px
+        max(20px, env(safe-area-inset-left));
     }
 
-    header {
-      padding: 12px 0 36px;
-      text-align: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      padding: 7px 14px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, rgba(64, 101, 255, 0.16), rgba(255, 117, 168, 0.16));
-      border: 1px solid rgba(77, 99, 167, 0.26);
-      color: #2d3a63;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: clamp(2.2rem, 8vw, 4rem);
-      line-height: 0.94;
-      letter-spacing: -0.05em;
-      font-weight: 750;
-      color: #172248;
-    }
-
-    @supports (-webkit-background-clip: text) {
-      h1 {
-        background: linear-gradient(128deg, #11224d 0%, #3556d9 42%, #8a42ff 72%, #eb4a8f 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-      }
-    }
-
-    .subtitle {
+    .nav-inner {
+      max-width: 960px;
       margin: 0 auto;
-      color: var(--muted);
-      font-size: 1.02rem;
-      line-height: 1.5;
-      max-width: 28rem;
-    }
-
-    .section-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #8a8fa8;
-      margin: 0 0 14px 2px;
-    }
-
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-
-    .game-card {
       display: flex;
-      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .nav-title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .nav-sub {
+      font-size: 0.8rem;
+      color: var(--tertiary);
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    /* HERO */
+    .hero {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 0;
+    }
+
+    .featured-card {
       border-radius: 26px;
       overflow: hidden;
-      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(244,248,255,0.82));
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      text-decoration: none;
-      color: inherit;
-      transition: transform 0.18s ease, box-shadow 0.22s ease;
-    }
-
-    .game-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 32px 60px rgba(36, 44, 72, 0.18);
-    }
-
-    .game-card:focus-visible {
-      outline: 2px solid rgba(57, 93, 255, 0.5);
-      outline-offset: 2px;
-    }
-
-    .game-thumb {
-      height: 160px;
-      display: grid;
-      place-items: center;
+      background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
       position: relative;
-      overflow: hidden;
-      background: linear-gradient(135deg, var(--thumb-start), var(--thumb-end));
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      min-height: 220px;
     }
 
-    .game-thumb::before {
+    .featured-card::before {
       content: "";
       position: absolute;
-      top: -30px; right: -20px;
-      width: 130px; height: 130px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.22);
-      filter: blur(4px);
+      inset: 0;
+      background:
+        radial-gradient(circle at 85% 20%, rgba(88,130,255,0.5), transparent 50%),
+        radial-gradient(circle at 15% 80%, rgba(255,100,150,0.3), transparent 48%);
     }
 
-    .game-thumb::after {
-      content: "";
-      position: absolute;
-      bottom: -44px; left: -30px;
-      width: 140px; height: 140px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.14);
-    }
-
-    .game-icon {
-      font-size: 3.4rem;
+    .featured-inner {
       position: relative;
       z-index: 1;
-      filter: drop-shadow(0 4px 14px rgba(0,0,0,0.2));
-      user-select: none;
-    }
-
-    .game-info {
-      padding: 18px 20px 20px;
+      padding: 28px;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      flex: 1;
-    }
-
-    .game-meta {
-      display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 8px;
     }
 
-    .game-name {
-      font-size: 1.12rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: #1a1e2b;
-      margin: 0;
-    }
-
-    .game-badge {
+    .featured-eyebrow {
       font-size: 0.7rem;
       font-weight: 700;
-      letter-spacing: 0.07em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      padding: 4px 9px;
-      border-radius: 999px;
-      background: rgba(47, 102, 255, 0.12);
-      color: #2f44a0;
-      border: 1px solid rgba(47, 102, 255, 0.22);
-      white-space: nowrap;
+      color: rgba(255,255,255,0.6);
     }
 
-    .game-desc {
-      font-size: 0.9rem;
-      color: var(--muted);
-      line-height: 1.45;
-      margin: 0;
+    .featured-content { display: grid; gap: 4px; }
+
+    .featured-icon {
+      font-size: 3rem;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
     }
 
-    .game-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+    .featured-name {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .featured-desc {
+      font-size: 0.92rem;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.4;
       margin-top: 4px;
     }
 
-    .game-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      font-size: 0.74rem;
-      font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(56, 70, 108, 0.08);
-      color: #4a5270;
-      border: 1px solid rgba(56, 70, 108, 0.14);
-    }
-
-    .play-btn {
+    .featured-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 10px 18px;
+      align-self: flex-start;
+      padding: 8px 18px;
       border-radius: 999px;
-      background: linear-gradient(135deg, #2f66ff, #7a45ff);
-      color: #fff;
+      background: rgba(255,255,255,0.22);
+      color: #ffffff;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.28);
+      margin-top: 14px;
+    }
+
+    /* SECTION */
+    .section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 0;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 0.5px solid var(--separator);
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .section-link {
+      font-size: 0.9rem;
+      color: var(--blue);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    /* GAME LIST */
+    .game-list { display: grid; gap: 0; }
+
+    .game-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 0.5px solid var(--separator);
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .game-row:last-child { border-bottom: none; }
+
+    .game-row-thumb {
+      width: 64px;
+      height: 64px;
+      border-radius: 15px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      font-size: 1.8rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-row-thumb::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.3), inset 0 -0.5px 0 rgba(0,0,0,0.1);
+    }
+
+    .game-row-info { flex: 1; min-width: 0; }
+
+    .game-row-name {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .game-row-desc {
+      font-size: 0.82rem;
+      color: var(--tertiary);
+      margin-top: 2px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .get-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 16px;
+      border-radius: 999px;
+      background: var(--fill);
+      color: var(--blue);
       font: inherit;
       font-size: 0.88rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      text-decoration: none;
-      box-shadow: 0 10px 22px rgba(47, 80, 198, 0.32), inset 0 1px 0 rgba(255,255,255,0.22);
-      transition: transform 0.15s ease, box-shadow 0.18s ease, filter 0.18s ease;
+      border: none;
+      cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
+      text-decoration: none;
+      transition: background 0.14s;
     }
+    .get-btn:hover { background: rgba(0,122,255,0.14); }
 
-    .play-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 26px rgba(47, 80, 198, 0.38), inset 0 1px 0 rgba(255,255,255,0.24);
-      filter: saturate(1.06);
-    }
-
-    .coming-soon {
-      opacity: 0.5;
+    .get-btn.disabled {
+      color: var(--tertiary);
       pointer-events: none;
     }
 
-    .coming-soon .play-btn {
-      background: rgba(56, 70, 108, 0.14);
-      color: #626673;
-      box-shadow: none;
+    /* CARD GRID (alternate view) */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
     }
 
-    .coming-badge {
-      font-size: 0.7rem;
+    .game-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.18s ease, box-shadow 0.2s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.14), 0 0 0 0.5px rgba(0,0,0,0.06);
+    }
+
+    .game-card-thumb {
+      height: 150px;
+      display: grid;
+      place-items: center;
+      font-size: 3.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-card-thumb::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.14));
+    }
+
+    .game-card-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+    .game-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+    .game-card-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    .game-card-badge {
+      font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.07em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 4px 9px;
+      color: var(--tertiary);
+      background: var(--fill);
+      padding: 3px 8px;
       border-radius: 999px;
-      background: rgba(150, 100, 0, 0.12);
-      color: #7a5200;
-      border: 1px solid rgba(150, 100, 0, 0.2);
     }
 
-    @keyframes drift {
-      0%   { transform: translate3d(0, 0, 0); }
-      50%  { transform: translate3d(18px, -10px, 0); }
-      100% { transform: translate3d(0, 0, 0); }
+    .game-card-desc { font-size: 0.84rem; color: var(--tertiary); line-height: 1.4; flex: 1; }
+
+    .game-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 0.5px solid var(--separator);
+    }
+
+    .tags { display: flex; gap: 5px; }
+
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--fill-2);
+      color: var(--secondary);
+    }
+
+    .coming-soon { opacity: 0.45; pointer-events: none; }
+
+    /* FOOTER */
+    footer {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px max(24px, env(safe-area-inset-bottom));
+      text-align: center;
+      color: var(--tertiary);
+      font-size: 0.8rem;
+      line-height: 1.6;
     }
 
     @keyframes fade-in {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .app { animation: fade-in 0.3s ease; }
+    main { animation: fade-in 0.28s ease; }
 
-    @media (max-width: 560px) {
-      .games-grid { grid-template-columns: 1fr; }
-      h1 { font-size: 2.4rem; }
+    @media (max-width: 600px) {
+      .featured-name { font-size: 1.6rem; }
+      .game-grid { grid-template-columns: 1fr 1fr; }
+      .game-grid .game-card-thumb { height: 110px; font-size: 2.4rem; }
+    }
+
+    @media (max-width: 400px) {
+      .game-grid { grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation: none !important;
-        transition: none !important;
-      }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <header>
-      <div class="eyebrow">justinyourdreams.de</div>
-      <h1>Spielbibliothek</h1>
-      <p class="subtitle">Party-Spiele fuer alle — einfach antippen und loslegen.</p>
-    </header>
 
-    <p class="section-label">Alle Spiele</p>
-
-    <div class="games-grid">
-
-      <a href="stirnraten.html" class="game-card" style="--thumb-start:#2f66ff;--thumb-end:#8a42ff;">
-        <div class="game-thumb">
-          <span class="game-icon">🧠</span>
-        </div>
-        <div class="game-info">
-          <div class="game-meta">
-            <p class="game-name">Stirnraten</p>
-            <span class="game-badge">Multiplayer</span>
-          </div>
-          <p class="game-desc">Handy an die Stirn, Freunde beschreiben den Begriff. Wer schafft die meisten in 60 Sekunden?</p>
-          <div class="game-footer">
-            <div class="game-tags">
-              <span class="tag">Party</span>
-              <span class="tag">Worte</span>
-            </div>
-            <span class="play-btn">Spielen</span>
-          </div>
-        </div>
-      </a>
-
-      <a href="imposter.html" class="game-card" style="--thumb-start:#e53935;--thumb-end:#7b1fa2;">
-        <div class="game-thumb">
-          <span class="game-icon">🕵️</span>
-        </div>
-        <div class="game-info">
-          <div class="game-meta">
-            <p class="game-name">Imposter</p>
-            <span class="game-badge">Multiplayer</span>
-          </div>
-          <p class="game-desc">Alle kennen das Wort — ausser dem Imposter. Findet ihn, bevor er unentdeckt bleibt.</p>
-          <div class="game-footer">
-            <div class="game-tags">
-              <span class="tag">Party</span>
-              <span class="tag">Taktik</span>
-            </div>
-            <span class="play-btn">Spielen</span>
-          </div>
-        </div>
-      </a>
-
-      <div class="game-card coming-soon" style="--thumb-start:#ff416c;--thumb-end:#ff9a3c;">
-        <div class="game-thumb">
-          <span class="game-icon">🎨</span>
-        </div>
-        <div class="game-info">
-          <div class="game-meta">
-            <p class="game-name">Zeichnen</p>
-            <span class="coming-badge">Bald</span>
-          </div>
-          <p class="game-desc">Einen Begriff zeichnen, die anderen tippen. Wer errät es zuerst?</p>
-          <div class="game-footer">
-            <div class="game-tags">
-              <span class="tag">Party</span>
-              <span class="tag">Kreativ</span>
-            </div>
-            <span class="play-btn">Bald</span>
-          </div>
-        </div>
+  <nav class="nav">
+    <div class="nav-inner">
+      <div>
+        <div class="nav-title">Arcade</div>
+        <div class="nav-sub">justinyourdreams.de</div>
       </div>
-
-      <div class="game-card coming-soon" style="--thumb-start:#00c6a7;--thumb-end:#38ef7d;">
-        <div class="game-thumb">
-          <span class="game-icon">❓</span>
-        </div>
-        <div class="game-info">
-          <div class="game-meta">
-            <p class="game-name">Quiz</p>
-            <span class="coming-badge">Bald</span>
-          </div>
-          <p class="game-desc">Allgemeinwissen-Fragen gegen die Zeit. Wer weiß am meisten?</p>
-          <div class="game-footer">
-            <div class="game-tags">
-              <span class="tag">Party</span>
-              <span class="tag">Wissen</span>
-            </div>
-            <span class="play-btn">Bald</span>
-          </div>
-        </div>
-      </div>
-
     </div>
+  </nav>
+
+  <main>
+    <!-- HERO: Featured Game -->
+    <div class="hero">
+      <a href="stirnraten.html" class="featured-card">
+        <div class="featured-inner">
+          <div class="featured-eyebrow">Spiel des Tages</div>
+          <div class="featured-content">
+            <div class="featured-icon">🧠</div>
+            <div class="featured-name">Stirnraten</div>
+            <div class="featured-desc">Handy an die Stirn — Freunde beschreiben. Wer schafft die meisten in 60 Sek?</div>
+            <div class="featured-btn">Jetzt spielen</div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- GAME LIST -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Alle Spiele</span>
+      </div>
+
+      <div class="game-list">
+
+        <a href="stirnraten.html" class="game-row">
+          <div class="game-row-thumb" style="background:linear-gradient(135deg,#2f66ff,#8a42ff);">🧠</div>
+          <div class="game-row-info">
+            <div class="game-row-name">Stirnraten</div>
+            <div class="game-row-desc">Kategorie wählen, Handy an die Stirn, spielen. 15 Kategorien, 60 Sekunden.</div>
+          </div>
+          <a href="stirnraten.html" class="get-btn">Spielen</a>
+        </a>
+
+        <a href="imposter.html" class="game-row">
+          <div class="game-row-thumb" style="background:linear-gradient(135deg,#e53935,#7b1fa2);">🕵️</div>
+          <div class="game-row-info">
+            <div class="game-row-name">Imposter</div>
+            <div class="game-row-desc">Alle kennen das Wort — nur der Imposter nicht. Findet ihn, bevor er unentdeckt bleibt.</div>
+          </div>
+          <a href="imposter.html" class="get-btn">Spielen</a>
+        </a>
+
+        <div class="game-row coming-soon">
+          <div class="game-row-thumb" style="background:linear-gradient(135deg,#ff9500,#ff2d55);">🎨</div>
+          <div class="game-row-info">
+            <div class="game-row-name">Zeichnen</div>
+            <div class="game-row-desc">Zeichne einen Begriff, die anderen erraten ihn. Wer ist am schnellsten?</div>
+          </div>
+          <span class="get-btn disabled">Bald</span>
+        </div>
+
+        <div class="game-row coming-soon">
+          <div class="game-row-thumb" style="background:linear-gradient(135deg,#34c759,#007aff);">❓</div>
+          <div class="game-row-info">
+            <div class="game-row-name">Quiz</div>
+            <div class="game-row-desc">Allgemeinwissen gegen die Zeit. Wer weiß am meisten?</div>
+          </div>
+          <span class="get-btn disabled">Bald</span>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>
+      justinyourdreams.de &nbsp;·&nbsp; Party-Spiele für alle
+    </footer>
   </main>
+
 </body>
 </html>

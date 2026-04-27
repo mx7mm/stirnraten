@@ -7,227 +7,288 @@
   <!-- ADSENSE_PLACEHOLDER -->
   <style>
     :root {
-      --bg: #0f1117;
-      --bg-deep: #080a0f;
-      --surface: rgba(255,255,255,0.07);
-      --text: #f4f6fc;
-      --muted: rgba(244,246,252,0.68);
-      --line: rgba(255,255,255,0.1);
-      --radius: 28px;
-      --shadow: 0 20px 50px rgba(0,0,0,0.36);
-      --accent-start: #e53935;
-      --accent-end: #b71c1c;
+      --bg: #f2f2f7;
+      --surface: #ffffff;
+      --surface-2: #f2f2f7;
+      --text: #1c1c1e;
+      --secondary: #3c3c43;
+      --tertiary: #8e8e93;
+      --fill: rgba(120,120,128,0.12);
+      --fill-2: rgba(120,120,128,0.08);
+      --separator: rgba(60,60,67,0.12);
+      --red: #ff3b30;
+      --red-soft: rgba(255,59,48,0.1);
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
     }
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100dvh; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100dvh;
+      background: var(--bg);
+    }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
       color: var(--text);
       -webkit-font-smoothing: antialiased;
-      background:
-        radial-gradient(circle at 80% 10%, rgba(229,57,53,0.22), transparent 36%),
-        radial-gradient(circle at 10% 90%, rgba(183,28,28,0.16), transparent 34%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
-      overflow-x: hidden;
+      letter-spacing: -0.011em;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      width: 300px; height: 300px;
-      top: -80px; right: -60px;
-      border-radius: 50%;
-      background: rgba(229,57,53,0.18);
-      filter: blur(40px);
-      pointer-events: none;
-      z-index: 0;
+    /* NAV */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(242,242,247,0.82);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 0.5px solid var(--separator);
+      padding:
+        max(12px, env(safe-area-inset-top))
+        max(20px, env(safe-area-inset-right))
+        12px
+        max(20px, env(safe-area-inset-left));
     }
 
+    .nav-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--red);
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .nav-back svg { width: 10px; height: 16px; }
+
+    .nav-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* MAIN */
     .app {
-      width: min(100%, 680px);
+      max-width: 640px;
       margin: 0 auto;
       padding:
-        max(16px, env(safe-area-inset-top))
+        24px
         max(16px, env(safe-area-inset-right))
-        max(24px, env(safe-area-inset-bottom))
+        max(40px, env(safe-area-inset-bottom))
         max(16px, env(safe-area-inset-left));
-      position: relative;
-      z-index: 1;
     }
-
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 600;
-      padding: 8px 0 20px;
-      transition: color 0.15s;
-    }
-    .back-link:hover { color: var(--text); }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 13px;
-      border-radius: 999px;
-      background: rgba(229,57,53,0.18);
-      border: 1px solid rgba(229,57,53,0.32);
-      color: #ff8a80;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    h1 { margin: 14px 0 10px; font-size: clamp(2.4rem, 9vw, 4.2rem); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; }
-    h2, h3, p { margin: 0; }
-
-    .subtitle { color: var(--muted); font-size: 1rem; line-height: 1.5; margin-bottom: 24px; max-width: 32rem; }
 
     /* AD SLOT */
     .ad-slot {
       width: 100%;
-      min-height: 90px;
-      background: rgba(255,255,255,0.04);
-      border: 1px dashed rgba(255,255,255,0.12);
-      border-radius: 18px;
+      min-height: 80px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.24);
-      font-size: 0.78rem;
+      color: var(--tertiary);
+      font-size: 0.75rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.05);
     }
 
-    /* SETUP */
-    .card {
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 22px;
-      margin-bottom: 14px;
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 8px 0 28px;
     }
 
-    .card-title {
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 14px;
+    .hero-icon { font-size: 4rem; margin-bottom: 12px; }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
       color: var(--text);
+      margin-bottom: 8px;
     }
 
-    .player-grid {
-      display: grid;
-      gap: 10px;
+    .hero p {
+      color: var(--tertiary);
+      font-size: 0.96rem;
+      line-height: 1.5;
+      max-width: 26rem;
+      margin: 0 auto;
     }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .card-label {
+      padding: 16px 16px 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--tertiary);
+    }
+
+    .card-section { padding: 0 16px 16px; }
+
+    /* PLAYERS */
+    .player-list { display: grid; gap: 0; }
 
     .player-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 0.5px solid var(--separator);
+    }
+    .player-row:last-child { border-bottom: none; }
+
+    .player-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--red);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
     }
 
     .player-input {
       flex: 1;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 12px 14px;
-      color: #fff;
-      font: inherit;
-      font-size: 0.95rem;
+      border: none;
       outline: none;
-      transition: border-color 0.16s;
+      font: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      background: transparent;
+      letter-spacing: -0.011em;
     }
-    .player-input::placeholder { color: rgba(255,255,255,0.3); }
-    .player-input:focus { border-color: rgba(229,57,53,0.5); }
+    .player-input::placeholder { color: var(--tertiary); }
 
     .remove-btn {
-      width: 36px; height: 36px;
+      width: 22px; height: 22px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.5);
+      background: var(--fill);
+      border: none;
+      color: var(--tertiary);
+      font-size: 1rem;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.14s;
+    }
+    .remove-btn:hover { background: var(--red-soft); color: var(--red); }
+    .remove-btn:disabled { opacity: 0.3; pointer-events: none; }
+
+    .add-player-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0 0;
+    }
+
+    .add-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,59,48,0.12);
+      color: var(--red);
       font-size: 1.1rem;
       display: grid;
       place-items: center;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
       flex-shrink: 0;
     }
-    .remove-btn:hover { background: rgba(229,57,53,0.2); color: #ff8a80; }
 
-    .add-btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.07);
-      border: 1px dashed rgba(255,255,255,0.18);
-      color: var(--muted);
+    .add-player-btn {
+      background: none;
+      border: none;
+      color: var(--red);
       font: inherit;
-      font-size: 0.92rem;
+      font-size: 1rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      margin-top: 6px;
+      padding: 0;
+      text-align: left;
     }
-    .add-btn:hover { background: rgba(255,255,255,0.11); color: var(--text); }
 
-    .word-input-wrap { display: grid; gap: 8px; }
-
-    .word-input {
+    /* WORD INPUT */
+    .word-field {
       width: 100%;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 12px 14px;
-      color: #fff;
-      font: inherit;
-      font-size: 0.95rem;
+      border: none;
       outline: none;
+      font: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      background: transparent;
+      padding: 12px 0;
+      letter-spacing: -0.011em;
     }
-    .word-input::placeholder { color: rgba(255,255,255,0.3); }
-    .word-input:focus { border-color: rgba(229,57,53,0.5); }
+    .word-field::placeholder { color: var(--tertiary); }
+    .word-hint { font-size: 0.82rem; color: var(--tertiary); line-height: 1.45; padding-bottom: 4px; }
 
-    .word-hint { font-size: 0.84rem; color: var(--muted); line-height: 1.45; }
-
-    .imposter-count-row {
+    /* STEPPER */
+    .stepper-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      padding: 14px 0;
     }
-    .imposter-count-label { font-size: 0.92rem; color: var(--muted); }
-    .counter-btns { display: flex; align-items: center; gap: 10px; }
-    .counter-btn {
-      width: 36px; height: 36px;
+
+    .stepper-label { font-size: 1rem; color: var(--text); }
+
+    .stepper-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stepper-btn {
+      width: 32px; height: 32px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: var(--text);
-      font-size: 1.2rem;
+      background: var(--fill);
+      border: none;
+      color: var(--red);
+      font-size: 1.3rem;
+      font-weight: 300;
       display: grid;
       place-items: center;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.14s;
+      line-height: 1;
     }
-    .counter-btn:hover { background: rgba(229,57,53,0.24); }
-    .counter-val { font-size: 1.1rem; font-weight: 700; min-width: 20px; text-align: center; }
+    .stepper-btn:hover { background: var(--red-soft); }
+    .stepper-btn:disabled { opacity: 0.3; pointer-events: none; }
+    .stepper-val { font-size: 1.1rem; font-weight: 600; min-width: 22px; text-align: center; }
 
-    /* PRIMARY BUTTON */
+    /* CTA */
     .btn-primary {
       width: 100%;
-      padding: 18px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+      padding: 17px;
+      border-radius: var(--radius-md);
+      background: var(--red);
       border: none;
       color: #fff;
       font: inherit;
@@ -235,121 +296,144 @@
       font-weight: 700;
       letter-spacing: -0.01em;
       cursor: pointer;
-      box-shadow: 0 14px 28px rgba(183,28,28,0.36), inset 0 1px 0 rgba(255,255,255,0.18);
-      transition: transform 0.15s, box-shadow 0.18s, filter 0.18s;
+      transition: opacity 0.14s, transform 0.14s;
       margin-top: 8px;
+      box-shadow: 0 4px 16px rgba(255,59,48,0.32);
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(183,28,28,0.44); filter: saturate(1.08); }
-    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.32; cursor: not-allowed; transform: none; box-shadow: none; }
 
     .btn-secondary {
       width: 100%;
       padding: 16px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: var(--text);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: none;
+      color: var(--red);
       font: inherit;
-      font-size: 0.98rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s, transform 0.15s;
-      margin-top: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.05);
+      transition: background 0.14s;
+      margin-top: 10px;
     }
-    .btn-secondary:hover { background: rgba(255,255,255,0.13); transform: translateY(-1px); }
+    .btn-secondary:hover { background: var(--fill-2); }
 
     /* REVEAL */
-    .reveal-screen { display: grid; gap: 14px; }
+    .reveal-list { display: grid; gap: 10px; }
 
     .reveal-card {
-      border-radius: var(--radius);
+      background: var(--surface);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: var(--shadow);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.05);
       cursor: pointer;
       user-select: none;
-      position: relative;
+      transition: transform 0.14s;
     }
+    .reveal-card:active { transform: scale(0.98); }
 
     .reveal-front {
-      padding: 26px 24px;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid var(--line);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      transition: background 0.18s;
+      padding: 18px 20px;
+      gap: 12px;
     }
-    .reveal-card:hover .reveal-front { background: rgba(255,255,255,0.11); }
 
-    .reveal-name { font-size: 1.12rem; font-weight: 700; }
-    .reveal-tap { font-size: 0.82rem; color: var(--muted); }
+    .reveal-front-left { display: flex; align-items: center; gap: 12px; }
+
+    .player-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .reveal-player-name { font-size: 1rem; font-weight: 600; }
+    .reveal-tap { font-size: 0.82rem; color: var(--tertiary); }
+
+    .chevron {
+      color: var(--tertiary);
+      font-size: 1rem;
+    }
 
     .reveal-back {
-      padding: 22px 24px;
       display: none;
       flex-direction: column;
       align-items: center;
       text-align: center;
+      padding: 28px 24px;
       gap: 10px;
     }
 
     .reveal-card.open .reveal-front { display: none; }
     .reveal-card.open .reveal-back { display: flex; }
 
-    .role-label {
+    .role-badge {
+      display: inline-flex;
+      padding: 5px 14px;
+      border-radius: 999px;
       font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 999px;
     }
 
-    .role-imposter {
-      background: rgba(229,57,53,0.22);
-      color: #ff8a80;
-      border: 1px solid rgba(229,57,53,0.34);
+    .badge-imposter {
+      background: var(--red-soft);
+      color: var(--red);
     }
 
-    .role-crew {
-      background: rgba(56,239,125,0.14);
-      color: #69f0ae;
-      border: 1px solid rgba(56,239,125,0.24);
+    .badge-crew {
+      background: rgba(52,199,89,0.12);
+      color: #34c759;
     }
 
     .reveal-word {
-      font-size: clamp(2rem, 9vw, 3.6rem);
+      font-size: clamp(2.4rem, 10vw, 4rem);
       font-weight: 800;
       letter-spacing: -0.05em;
       line-height: 1;
     }
 
-    .imposter-word { color: #ff8a80; }
-    .crew-word { color: var(--text); }
+    .word-imposter { color: var(--red); }
+    .word-crew { color: var(--text); }
 
-    .reveal-hint { font-size: 0.88rem; color: var(--muted); line-height: 1.45; }
-
-    .reveal-back.is-imposter {
-      background: linear-gradient(160deg, rgba(229,57,53,0.22), rgba(183,28,28,0.14));
-      border: 1px solid rgba(229,57,53,0.22);
-    }
-    .reveal-back.is-crew {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--line);
+    .reveal-hint {
+      font-size: 0.86rem;
+      color: var(--tertiary);
+      line-height: 1.45;
+      max-width: 24rem;
     }
 
-    .done-hint {
+    .close-hint {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--tertiary);
+    }
+
+    .done-banner {
+      background: rgba(52,199,89,0.12);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
       text-align: center;
-      color: var(--muted);
-      font-size: 0.9rem;
-      padding: 8px 0 4px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #34c759;
+      display: none;
+      margin-top: 14px;
     }
 
     .hidden { display: none !important; }
 
     @keyframes fade-in {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -361,66 +445,96 @@
   </style>
 </head>
 <body>
-  <div class="app">
-    <a href="index.html" class="back-link">← Spielbibliothek</a>
 
-    <!-- SETUP SCREEN -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-back">
+        <svg viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8.5 1L1.5 8L8.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Arcade
+      </a>
+      <span class="nav-title">Imposter</span>
+    </div>
+  </nav>
+
+  <div class="app">
+
+    <!-- SETUP -->
     <div id="setup-screen" class="screen">
-      <div class="eyebrow">Party-Spiel</div>
-      <h1>Imposter</h1>
-      <p class="subtitle">Alle kennen das Wort — ausser dem Imposter. Wer entlarvt ihn?</p>
+
+      <div class="hero">
+        <div class="hero-icon">🕵️</div>
+        <h1>Imposter</h1>
+        <p>Alle kennen das Wort — nur der Imposter nicht. Entlarvt ihn, bevor er unentdeckt bleibt.</p>
+      </div>
 
       <div class="ad-slot" id="ad-top">Werbung</div>
 
+      <!-- Players -->
       <div class="card">
-        <div class="card-title">Spieler</div>
-        <div class="player-grid" id="player-grid"></div>
-        <button class="add-btn" id="add-player-btn">+ Spieler hinzufuegen</button>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Geheimes Wort</div>
-        <div class="word-input-wrap">
-          <input class="word-input" id="word-input" type="text" placeholder="z.B. Strand, Pizza, Elefant ..." autocomplete="off" />
-          <p class="word-hint">Alle Crew-Mitglieder sehen dieses Wort. Der Imposter sieht stattdessen ein Fragezeichen.</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="imposter-count-row">
-          <span class="imposter-count-label">Anzahl Imposter</span>
-          <div class="counter-btns">
-            <button class="counter-btn" id="imposter-minus">−</button>
-            <span class="counter-val" id="imposter-count-display">1</span>
-            <button class="counter-btn" id="imposter-plus">+</button>
+        <div class="card-label">Spieler</div>
+        <div class="card-section">
+          <div class="player-list" id="player-list"></div>
+          <div class="add-player-row">
+            <div class="add-icon">+</div>
+            <button class="add-player-btn" id="add-player-btn">Spieler hinzufügen</button>
           </div>
         </div>
       </div>
 
-      <button class="btn-primary" id="start-btn" disabled>Karten austeilen</button>
+      <!-- Word -->
+      <div class="card">
+        <div class="card-label">Geheimes Wort</div>
+        <div class="card-section">
+          <input class="word-field" id="word-input" type="text" placeholder="z.B. Strand, Pizza, Gitarre …" autocomplete="off" />
+          <p class="word-hint">Alle Crew-Mitglieder sehen dieses Wort. Der Imposter sieht nur „???".</p>
+        </div>
+      </div>
+
+      <!-- Imposter count -->
+      <div class="card">
+        <div class="card-section">
+          <div class="stepper-row">
+            <span class="stepper-label">Anzahl Imposter</span>
+            <div class="stepper-controls">
+              <button class="stepper-btn" id="imp-minus">−</button>
+              <span class="stepper-val" id="imp-val">1</span>
+              <button class="stepper-btn" id="imp-plus">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="start-btn" disabled>Karten austeilen →</button>
     </div>
 
-    <!-- REVEAL SCREEN -->
+    <!-- REVEAL -->
     <div id="reveal-screen" class="screen hidden">
-      <div class="eyebrow">Karten aufdecken</div>
-      <h1 style="font-size:clamp(1.8rem,7vw,3rem);margin-bottom:6px;">Jeder schaut alleine</h1>
-      <p class="subtitle" style="margin-bottom:20px;">Antippen, schauen, wieder antippen zum Schliessen.</p>
+
+      <div class="hero" style="padding-bottom:20px;">
+        <h1 style="font-size:1.8rem;">Jeder schaut alleine</h1>
+        <p>Antippen, Rolle anschauen, wieder schließen.</p>
+      </div>
 
       <div class="ad-slot" id="ad-reveal">Werbung</div>
 
-      <div class="reveal-screen" id="reveal-cards"></div>
+      <div class="reveal-list" id="reveal-list"></div>
 
-      <p class="done-hint" id="done-hint" style="display:none;">Alle aufgedeckt — Spiel kann beginnen!</p>
+      <div class="done-banner" id="done-banner">Alle haben geschaut — los geht's! 🎉</div>
+
       <button class="btn-secondary hidden" id="new-round-btn">Neue Runde</button>
     </div>
+
   </div>
 
   <script>
+    const COLORS = ["#ff3b30","#ff9500","#34c759","#007aff","#5856d6","#af52de","#ff2d55","#30b0c7","#a2845e","#636366"];
+
     const state = {
-      players: ["", "", ""],
-      imposterCount: 1,
+      players: ["","",""],
+      impCount: 1,
       word: "",
-      openCard: null,
       seenCount: 0,
       totalCards: 0
     };
@@ -428,17 +542,91 @@
     const els = {
       setupScreen: document.getElementById("setup-screen"),
       revealScreen: document.getElementById("reveal-screen"),
-      playerGrid: document.getElementById("player-grid"),
+      playerList: document.getElementById("player-list"),
       addPlayerBtn: document.getElementById("add-player-btn"),
       wordInput: document.getElementById("word-input"),
-      imposterMinus: document.getElementById("imposter-minus"),
-      imposterPlus: document.getElementById("imposter-plus"),
-      imposterDisplay: document.getElementById("imposter-count-display"),
+      impMinus: document.getElementById("imp-minus"),
+      impPlus: document.getElementById("imp-plus"),
+      impVal: document.getElementById("imp-val"),
       startBtn: document.getElementById("start-btn"),
-      revealCards: document.getElementById("reveal-cards"),
-      doneHint: document.getElementById("done-hint"),
+      revealList: document.getElementById("reveal-list"),
+      doneBanner: document.getElementById("done-banner"),
       newRoundBtn: document.getElementById("new-round-btn")
     };
+
+    function validPlayers() { return state.players.filter(p => p.trim()); }
+
+    function validate() {
+      const vp = validPlayers().length;
+      const wordOk = state.word.trim().length > 0;
+      els.startBtn.disabled = !(vp >= 2 && wordOk && state.impCount < vp);
+      els.impMinus.disabled = state.impCount <= 1;
+      els.impPlus.disabled = state.impCount >= Math.max(1, vp - 1);
+      els.impVal.textContent = state.impCount;
+    }
+
+    function renderPlayers() {
+      els.playerList.innerHTML = "";
+      state.players.forEach((name, i) => {
+        const row = document.createElement("div");
+        row.className = "player-row";
+
+        const num = document.createElement("div");
+        num.className = "player-num";
+        num.style.background = COLORS[i % COLORS.length];
+        num.textContent = i + 1;
+
+        const input = document.createElement("input");
+        input.className = "player-input";
+        input.type = "text";
+        input.placeholder = "Spieler " + (i + 1);
+        input.value = name;
+        input.maxLength = 20;
+        input.addEventListener("input", () => {
+          state.players[i] = input.value;
+          const vp = validPlayers().length;
+          if (state.impCount >= vp) state.impCount = Math.max(1, vp - 1);
+          validate();
+        });
+
+        const rm = document.createElement("button");
+        rm.className = "remove-btn";
+        rm.innerHTML = "×";
+        rm.disabled = state.players.length <= 2;
+        rm.addEventListener("click", () => {
+          state.players.splice(i, 1);
+          const vp = validPlayers().length;
+          if (state.impCount >= vp) state.impCount = Math.max(1, vp - 1);
+          renderPlayers();
+          validate();
+        });
+
+        row.append(num, input, rm);
+        els.playerList.appendChild(row);
+      });
+    }
+
+    els.addPlayerBtn.addEventListener("click", () => {
+      if (state.players.length >= 12) return;
+      state.players.push("");
+      renderPlayers();
+      validate();
+      els.playerList.querySelectorAll(".player-input")[state.players.length - 1].focus();
+    });
+
+    els.wordInput.addEventListener("input", () => {
+      state.word = els.wordInput.value;
+      validate();
+    });
+
+    els.impMinus.addEventListener("click", () => {
+      if (state.impCount > 1) { state.impCount--; validate(); }
+    });
+
+    els.impPlus.addEventListener("click", () => {
+      const vp = validPlayers().length;
+      if (state.impCount < vp - 1) { state.impCount++; validate(); }
+    });
 
     function shuffle(arr) {
       const a = [...arr];
@@ -449,164 +637,95 @@
       return a;
     }
 
-    function validate() {
-      const validPlayers = state.players.filter(p => p.trim()).length;
-      const wordOk = state.word.trim().length > 0;
-      const impOk = state.imposterCount < validPlayers && validPlayers >= 2;
-      els.startBtn.disabled = !(validPlayers >= 2 && wordOk && impOk);
+    function escHtml(s) {
+      return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
-    function updateImposterButtons() {
-      const validPlayers = state.players.filter(p => p.trim()).length;
-      els.imposterMinus.disabled = state.imposterCount <= 1;
-      els.imposterPlus.disabled = state.imposterCount >= Math.max(1, validPlayers - 1);
-      els.imposterDisplay.textContent = state.imposterCount;
-    }
+    els.startBtn.addEventListener("click", () => {
+      const vp = state.players.map((p, i) => ({ name: p.trim() || ("Spieler " + (i+1)), idx: i })).filter(p => p.name);
+      const shuffled = shuffle(vp);
+      const impSet = new Set(shuffled.slice(0, state.impCount).map(p => p.idx));
 
-    function renderPlayers() {
-      els.playerGrid.innerHTML = "";
-      state.players.forEach((name, i) => {
-        const row = document.createElement("div");
-        row.className = "player-row";
-
-        const input = document.createElement("input");
-        input.className = "player-input";
-        input.type = "text";
-        input.placeholder = "Spieler " + (i + 1);
-        input.value = name;
-        input.maxLength = 24;
-        input.addEventListener("input", () => {
-          state.players[i] = input.value;
-          validate();
-          updateImposterButtons();
-        });
-
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "remove-btn";
-        removeBtn.textContent = "×";
-        removeBtn.title = "Entfernen";
-        removeBtn.addEventListener("click", () => {
-          state.players.splice(i, 1);
-          if (state.imposterCount >= state.players.filter(p=>p.trim()).length) {
-            state.imposterCount = Math.max(1, state.players.filter(p=>p.trim()).length - 1);
-          }
-          renderPlayers();
-          validate();
-          updateImposterButtons();
-        });
-
-        if (state.players.length <= 2) removeBtn.disabled = true;
-
-        row.appendChild(input);
-        row.appendChild(removeBtn);
-        els.playerGrid.appendChild(row);
-      });
-    }
-
-    els.addPlayerBtn.addEventListener("click", () => {
-      state.players.push("");
-      renderPlayers();
-      validate();
-      updateImposterButtons();
-      const inputs = els.playerGrid.querySelectorAll(".player-input");
-      inputs[inputs.length - 1].focus();
-    });
-
-    els.wordInput.addEventListener("input", () => {
-      state.word = els.wordInput.value;
-      validate();
-    });
-
-    els.imposterMinus.addEventListener("click", () => {
-      if (state.imposterCount > 1) {
-        state.imposterCount--;
-        updateImposterButtons();
-        validate();
-      }
-    });
-
-    els.imposterPlus.addEventListener("click", () => {
-      const validPlayers = state.players.filter(p => p.trim()).length;
-      if (state.imposterCount < validPlayers - 1) {
-        state.imposterCount++;
-        updateImposterButtons();
-        validate();
-      }
-    });
-
-    els.startBtn.addEventListener("click", startGame);
-    els.newRoundBtn.addEventListener("click", newRound);
-
-    function startGame() {
-      const validPlayers = state.players.map((p, i) => ({ name: p.trim() || ("Spieler " + (i+1)), index: i })).filter(p => p.name);
-      const shuffled = shuffle(validPlayers);
-      const imposterIndices = new Set(shuffled.slice(0, state.imposterCount).map(p => p.index));
-
-      els.revealCards.innerHTML = "";
+      els.revealList.innerHTML = "";
       state.seenCount = 0;
-      state.openCard = null;
-      state.totalCards = validPlayers.length;
-      els.doneHint.style.display = "none";
+      state.totalCards = vp.length;
+      els.doneBanner.style.display = "none";
       els.newRoundBtn.classList.add("hidden");
 
-      validPlayers.forEach((player, i) => {
-        const isImposter = imposterIndices.has(player.index);
+      vp.forEach((player, i) => {
+        const isImp = impSet.has(player.idx);
+        const color = COLORS[player.idx % COLORS.length];
 
         const card = document.createElement("div");
         card.className = "reveal-card";
-        card.dataset.seen = "0";
+        let seen = false;
 
+        // Front
         const front = document.createElement("div");
         front.className = "reveal-front";
-        front.innerHTML = "<span class='reveal-name'>" + player.name + "</span><span class='reveal-tap'>Antippen zum Ansehen</span>";
+        front.innerHTML = `
+          <div class="reveal-front-left">
+            <div class="player-avatar" style="background:${color}">${escHtml(player.name.charAt(0).toUpperCase())}</div>
+            <div>
+              <div class="reveal-player-name">${escHtml(player.name)}</div>
+              <div class="reveal-tap">Tippen zum Aufdecken</div>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        `;
 
+        // Back
         const back = document.createElement("div");
-        back.className = "reveal-back " + (isImposter ? "is-imposter" : "is-crew");
-        back.innerHTML = (isImposter
-          ? "<span class='role-label role-imposter'>Imposter</span><div class='reveal-word imposter-word'>???</div><p class='reveal-hint'>Du kennst das Wort nicht. Beschreibe trotzdem mit, ohne aufzufallen.</p>"
-          : "<span class='role-label role-crew'>Crew</span><div class='reveal-word crew-word'>" + escapeHtml(state.word) + "</div><p class='reveal-hint'>Du kennst das Wort. Beschreibe es, ohne den Imposter zu verraten.</p>"
-        );
+        back.className = "reveal-back";
+        if (isImp) {
+          back.innerHTML = `
+            <span class="role-badge badge-imposter">Imposter</span>
+            <div class="reveal-word word-imposter">???</div>
+            <p class="reveal-hint">Du kennst das Wort nicht. Beschreibe trotzdem mit, ohne aufzufallen.</p>
+            <p class="close-hint">Tippen zum Schließen</p>
+          `;
+        } else {
+          back.innerHTML = `
+            <span class="role-badge badge-crew">Crew</span>
+            <div class="reveal-word word-crew">${escHtml(state.word)}</div>
+            <p class="reveal-hint">Du kennst das Wort. Beschreibe es, ohne den Imposter zu verraten.</p>
+            <p class="close-hint">Tippen zum Schließen</p>
+          `;
+        }
 
-        card.appendChild(front);
-        card.appendChild(back);
+        card.append(front, back);
 
         card.addEventListener("click", () => {
-          if (card.classList.contains("open")) {
-            card.classList.remove("open");
-            state.openCard = null;
-          } else {
-            if (state.openCard) state.openCard.classList.remove("open");
+          const isOpen = card.classList.contains("open");
+          document.querySelectorAll(".reveal-card.open").forEach(c => c.classList.remove("open"));
+          if (!isOpen) {
             card.classList.add("open");
-            state.openCard = card;
-            if (card.dataset.seen === "0") {
-              card.dataset.seen = "1";
+            if (!seen) {
+              seen = true;
               state.seenCount++;
               if (state.seenCount >= state.totalCards) {
-                els.doneHint.style.display = "block";
+                els.doneBanner.style.display = "block";
                 els.newRoundBtn.classList.remove("hidden");
               }
             }
           }
         });
 
-        els.revealCards.appendChild(card);
+        els.revealList.appendChild(card);
       });
 
       els.setupScreen.classList.add("hidden");
       els.revealScreen.classList.remove("hidden");
-    }
+      window.scrollTo(0, 0);
+    });
 
-    function newRound() {
-      els.setupScreen.classList.remove("hidden");
+    els.newRoundBtn.addEventListener("click", () => {
       els.revealScreen.classList.add("hidden");
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    }
+      els.setupScreen.classList.remove("hidden");
+      window.scrollTo(0, 0);
+    });
 
     renderPlayers();
-    updateImposterButtons();
     validate();
   </script>
 </body>
