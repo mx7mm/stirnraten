@@ -1168,6 +1168,7 @@
       hintDisplay: document.getElementById("hint-display"),
       sensorNote: document.getElementById("sensor-note"),
       actionRow: document.getElementById("action-row"),
+
       sensorBtn: document.getElementById("sensor-btn"),
       menuRecalibrateBtn: document.getElementById("menu-recalibrate-btn"),
       nextWordBtn: document.getElementById("next-word-btn"),
@@ -1758,6 +1759,27 @@
       await enableMotion();
       if (state.sensorEnabled) {
         await calibrateTilt(900);
+      } else {
+        // Wait 3s for orientation events to fire (some browsers report no support but do fire)
+        await new Promise((resolve) => {
+          const timeout = window.setTimeout(() => {
+            if (!state.sensorEnabled) {
+              elements.sensorNote.classList.add("hidden");
+              elements.sensorNote.textContent = "";
+              elements.actionRow.classList.remove("hidden");
+              elements.actionRow.removeAttribute("aria-hidden");
+            }
+            resolve();
+          }, 3000);
+          // If sensor activates before timeout, clear it
+          const check = window.setInterval(() => {
+            if (state.sensorEnabled) {
+              window.clearTimeout(timeout);
+              window.clearInterval(check);
+              resolve();
+            }
+          }, 200);
+        });
       }
       showWord();
       showTiltHintOnce();
