@@ -3,36 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Stirnraten</title>
+  <title>Spielbibliothek</title>
   <style>
     :root {
       --bg: #edf1ff;
       --bg-soft: #f9fbff;
-      --surface: rgba(255, 255, 255, 0.82);
-      --surface-soft: #eef2ff;
       --text: #16181d;
       --muted: #626673;
-      --line: rgba(56, 70, 108, 0.24);
-      --line-soft: rgba(56, 70, 108, 0.14);
+      --line: rgba(56, 70, 108, 0.18);
       --radius: 30px;
-      --shadow: 0 28px 56px rgba(36, 44, 72, 0.15);
-      --shadow-soft: 0 12px 28px rgba(36, 44, 72, 0.08);
-      --theme-start: #0a84ff;
-      --theme-end: #5e5ce6;
-      --theme-ink: #ffffff;
-      --flash: transparent;
-      --action-blue: #2f66ff;
-      --action-blue-strong: #7a45ff;
-      --danger-soft: #fff0f3;
-      --danger-text: #c02d50;
+      --shadow: 0 24px 52px rgba(36, 44, 72, 0.14);
+      --shadow-soft: 0 10px 24px rgba(36, 44, 72, 0.08);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       min-height: 100dvh;
     }
@@ -42,136 +28,76 @@
       color: var(--text);
       letter-spacing: -0.011em;
       background:
-        radial-gradient(circle at 96% 2%, rgba(88, 111, 255, 0.2), transparent 35%),
-        radial-gradient(circle at 2% 94%, rgba(255, 123, 165, 0.16), transparent 34%),
-        radial-gradient(circle at 42% 12%, rgba(126, 206, 255, 0.16), transparent 32%),
+        radial-gradient(circle at 94% 3%, rgba(88, 111, 255, 0.18), transparent 34%),
+        radial-gradient(circle at 4% 96%, rgba(255, 123, 165, 0.14), transparent 32%),
+        radial-gradient(circle at 44% 14%, rgba(126, 206, 255, 0.14), transparent 30%),
         linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
-      position: relative;
-      overflow-x: hidden;
-      overflow-y: auto;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
 
-    body.game-active {
-      overflow: hidden;
-      overscroll-behavior: none;
-    }
-
-    body::before,
-    body::after {
+    body::before, body::after {
       content: "";
       position: fixed;
       border-radius: 999px;
       pointer-events: none;
       filter: blur(38px);
-      opacity: 0.48;
+      opacity: 0.44;
       z-index: 0;
       animation: drift 18s ease-in-out infinite;
     }
 
     body::before {
-      width: 320px;
-      height: 320px;
-      top: -110px;
-      right: -80px;
-      background: rgba(76, 102, 255, 0.32);
+      width: 320px; height: 320px;
+      top: -110px; right: -80px;
+      background: rgba(76, 102, 255, 0.28);
     }
 
     body::after {
-      width: 360px;
-      height: 360px;
-      left: -150px;
-      bottom: -140px;
-      background: rgba(255, 122, 166, 0.24);
+      width: 360px; height: 360px;
+      left: -150px; bottom: -140px;
+      background: rgba(255, 122, 166, 0.22);
       animation-delay: -8s;
     }
 
-    .flash {
-      position: fixed;
-      inset: 0;
-      background: var(--flash);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 30;
-      transition: opacity 0.12s ease;
-    }
-
-    body.flash-on .flash {
-      opacity: 1;
-    }
-
     .app {
-      width: min(100%, 1020px);
+      width: min(100%, 880px);
       margin: 0 auto;
-      min-height: 100dvh;
       padding:
-        max(14px, env(safe-area-inset-top))
-        max(14px, env(safe-area-inset-right))
-        max(14px, env(safe-area-inset-bottom))
-        max(14px, env(safe-area-inset-left));
+        max(28px, env(safe-area-inset-top))
+        max(18px, env(safe-area-inset-right))
+        max(40px, env(safe-area-inset-bottom))
+        max(18px, env(safe-area-inset-left));
       position: relative;
       z-index: 1;
     }
 
-    .screen {
-      min-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom)));
-      display: grid;
-      align-content: center;
-      gap: 18px;
-      animation: fade-in 0.32s ease;
-    }
-
-    #start-screen {
-      align-content: start;
-      padding-bottom: 8px;
-    }
-
-    .card {
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(244, 248, 255, 0.8)),
-        var(--surface);
-      backdrop-filter: blur(16px) saturate(145%);
-      border: 1px solid var(--line-soft);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .intro {
-      padding: 34px 8px 6px;
+    header {
+      padding: 12px 0 36px;
       text-align: center;
-      max-width: 42rem;
-      justify-self: center;
     }
 
     .eyebrow {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 7px 13px;
+      padding: 7px 14px;
       border-radius: 999px;
-      background: linear-gradient(135deg, rgba(64, 101, 255, 0.17), rgba(255, 117, 168, 0.17));
-      border: 1px solid rgba(77, 99, 167, 0.28);
+      background: linear-gradient(135deg, rgba(64, 101, 255, 0.16), rgba(255, 117, 168, 0.16));
+      border: 1px solid rgba(77, 99, 167, 0.26);
       color: #2d3a63;
-      font-size: 0.71rem;
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.09em;
       text-transform: uppercase;
-    }
-
-    h1,
-    h2,
-    p {
-      margin: 0;
+      margin-bottom: 16px;
     }
 
     h1 {
-      margin-top: 16px;
-      font-size: clamp(2.25rem, 8.2vw, 4.35rem);
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 8vw, 4rem);
       line-height: 0.94;
       letter-spacing: -0.05em;
       font-weight: 750;
-      text-wrap: balance;
       color: #172248;
     }
 
@@ -184,605 +110,224 @@
       }
     }
 
-    h2 {
-      font-size: clamp(1.6rem, 3.8vw, 2.35rem);
-      line-height: 0.98;
-      letter-spacing: -0.038em;
-      font-weight: 740;
-      color: #1a1e2b;
-    }
-
     .subtitle {
-      margin: 14px auto 0;
-      color: var(--muted);
-      font-size: 1.03rem;
-      line-height: 1.52;
-      max-width: 30rem;
-    }
-
-    .fullscreen-note {
-      margin-top: 14px;
-      color: #747987;
-      font-size: 0.88rem;
-      line-height: 1.45;
-    }
-
-    .categories {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      padding-top: 10px;
-    }
-
-    .settings-panel {
-      padding: 16px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .setup-toggle {
-      overflow: hidden;
-    }
-
-    .setup-toggle > summary {
-      list-style: none;
-      cursor: pointer;
-      user-select: none;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1f1f22;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .setup-toggle > summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .setup-toggle > summary::after {
-      content: "Mehr";
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #8a8a90;
-    }
-
-    .setup-toggle[open] > summary::after {
-      content: "Weniger";
-    }
-
-    .settings-grid {
-      margin-top: 2px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .setting {
-      display: grid;
-      gap: 8px;
-      color: #3b3b3f;
-      font-size: 0.88rem;
-      font-weight: 600;
-    }
-
-    .setting select {
-      width: 100%;
-      appearance: none;
-      border: 1px solid rgba(60, 60, 67, 0.2);
-      border-radius: 14px;
-      padding: 11px 12px;
-      font: inherit;
-      color: #1d1d1f;
-      background: #ffffff;
-      outline: none;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-    }
-
-    .setting select:focus-visible {
-      border-color: rgba(0, 113, 227, 0.6);
-      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.14);
-    }
-
-    .category {
-      width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.46);
-      background: linear-gradient(135deg, var(--card-start), var(--card-end));
-      color: #ffffff;
-      border-radius: 22px;
-      padding: 15px 15px 15px 16px;
-      text-align: left;
-      cursor: pointer;
-      box-shadow:
-        0 14px 28px rgba(26, 35, 65, 0.24),
-        inset 0 1px 0 rgba(255, 255, 255, 0.34);
-      transition: transform 0.16s ease, box-shadow 0.22s ease, filter 0.2s ease, opacity 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .category::before {
-      content: "";
-      position: absolute;
-      top: -30px;
-      right: -24px;
-      width: 124px;
-      height: 124px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.24);
-      opacity: 0.68;
-      filter: blur(3px);
-    }
-
-    .category::after {
-      content: "";
-      position: absolute;
-      inset: auto -40px -54px auto;
-      width: 144px;
-      height: 144px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.14);
-    }
-
-    .category:hover,
-    .category:focus-visible {
-      transform: translateY(-3px);
-      box-shadow:
-        0 18px 34px rgba(20, 29, 52, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.38);
-      filter: saturate(1.1) brightness(1.01);
-      outline: none;
-    }
-
-    .category strong,
-    .category span {
-      position: relative;
-      z-index: 1;
-      display: block;
-      margin-left: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .category strong {
-      font-size: 0.99rem;
-      margin-bottom: 3px;
-      letter-spacing: -0.02em;
-      color: #ffffff;
-      line-height: 1.15;
-      text-shadow: 0 1px 14px rgba(0, 0, 0, 0.22);
-    }
-
-    .category span {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 0.81rem;
-      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.18);
-    }
-
-    .play {
-      padding: 20px;
-      gap: 16px;
-      position: relative;
-      background:
-        radial-gradient(circle at 86% 16%, rgba(82, 119, 255, 0.16), transparent 38%),
-        radial-gradient(circle at 10% 92%, rgba(255, 111, 149, 0.12), transparent 38%),
-        linear-gradient(180deg, #ffffff, #f2f6ff);
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 4px 4px 0;
-    }
-
-    .topbar-controls {
-      display: grid;
-      justify-items: end;
-      gap: 8px;
-    }
-
-    .meta {
-      color: #6e6e73;
-      font-size: 0.9rem;
-      margin-top: 4px;
-      font-weight: 500;
-    }
-
-    .timer {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #27386b;
-      padding: 11px 14px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, rgba(52, 93, 255, 0.18), rgba(119, 78, 255, 0.18));
-      border: 1px solid rgba(75, 99, 197, 0.3);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
-      min-width: 74px;
-      text-align: center;
-    }
-
-    .pause-btn {
-      border-radius: 999px;
-      padding: 9px 13px;
-      font-size: 0.88rem;
-      line-height: 1;
-    }
-
-    .word-card {
-      min-height: clamp(260px, 52vh, 520px);
-      display: grid;
-      place-items: center;
-      padding: 28px 20px;
-      border-radius: 36px;
-      border: 1px solid rgba(255, 255, 255, 0.42);
-      background:
-        radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.3), transparent 28%),
-        radial-gradient(circle at 86% 18%, rgba(255, 255, 255, 0.14), transparent 30%),
-        linear-gradient(140deg, var(--theme-start), var(--theme-end));
-      text-align: center;
-      box-shadow:
-        0 28px 50px rgba(27, 38, 70, 0.32),
-        inset 0 1px 0 rgba(255, 255, 255, 0.34);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .word-card::before {
-      content: "";
-      position: absolute;
-      inset: -36% -22% auto auto;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.24);
-      opacity: 0.66;
-      filter: blur(5px);
-      pointer-events: none;
-    }
-
-    .word-card::after {
-      content: "";
-      position: absolute;
-      inset: auto auto -36% -20%;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.18);
-      opacity: 0.6;
-      pointer-events: none;
-    }
-
-    .word {
-      font-size: clamp(2.05rem, 9.4vw, 5.1rem);
-      line-height: 0.92;
-      letter-spacing: -0.05em;
-      font-weight: 700;
-      text-wrap: pretty;
-      max-width: 100%;
-      color: var(--theme-ink);
-      text-shadow: 0 10px 28px rgba(12, 18, 36, 0.28);
-      overflow-wrap: anywhere;
-      word-break: break-word;
-      hyphens: auto;
-    }
-
-    .word-wrap {
-      position: relative;
-      z-index: 1;
-      width: min(100%, 95%);
       margin: 0 auto;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.5;
+      max-width: 28rem;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #8a8fa8;
+      margin: 0 0 14px 2px;
+    }
+
+    .games-grid {
       display: grid;
-      gap: 12px;
-      justify-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
     }
 
-    .hint {
-      font-size: 0.92rem;
-      color: rgba(255, 255, 255, 0.92);
-      line-height: 1.45;
-      margin-top: 4px;
-      max-width: 36ch;
-      text-shadow: 0 5px 16px rgba(18, 20, 36, 0.26);
+    .game-card {
+      display: flex;
+      flex-direction: column;
+      border-radius: 26px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(244,248,255,0.82));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.18s ease, box-shadow 0.22s ease;
     }
 
-    .sensor-ui,
-    .stack {
-      display: grid;
-      gap: 10px;
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 32px 60px rgba(36, 44, 72, 0.18);
     }
 
-    .action-row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .sensor-note {
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(52, 93, 255, 0.13), rgba(120, 86, 255, 0.12));
-      border: 1px solid rgba(70, 95, 188, 0.3);
-      color: #2d3d70;
-      font-size: 0.88rem;
-      line-height: 1.4;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .sensor-note.warning {
-      background: linear-gradient(135deg, rgba(255, 170, 52, 0.2), rgba(255, 100, 145, 0.15));
-      border-color: rgba(180, 93, 34, 0.28);
-      color: #7d3e1f;
-    }
-
-    button {
-      font: inherit;
-      border: 0;
-      border-radius: 19px;
-      padding: 16px 16px;
-      cursor: pointer;
-      transition: transform 0.15s ease, opacity 0.16s ease, box-shadow 0.2s ease, background-color 0.2s ease, filter 0.2s ease;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    button:focus-visible {
-      outline: 2px solid rgba(57, 93, 255, 0.52);
+    .game-card:focus-visible {
+      outline: 2px solid rgba(57, 93, 255, 0.5);
       outline-offset: 2px;
     }
 
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      transform: none;
+    .game-thumb {
+      height: 160px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--thumb-start), var(--thumb-end));
+    }
+
+    .game-thumb::before {
+      content: "";
+      position: absolute;
+      top: -30px; right: -20px;
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.22);
+      filter: blur(4px);
+    }
+
+    .game-thumb::after {
+      content: "";
+      position: absolute;
+      bottom: -44px; left: -30px;
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.14);
+    }
+
+    .game-icon {
+      font-size: 3.4rem;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 4px 14px rgba(0,0,0,0.2));
+      user-select: none;
+    }
+
+    .game-info {
+      padding: 18px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .game-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .game-name {
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1a1e2b;
+      margin: 0;
+    }
+
+    .game-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(47, 102, 255, 0.12);
+      color: #2f44a0;
+      border: 1px solid rgba(47, 102, 255, 0.22);
+      white-space: nowrap;
+    }
+
+    .game-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .game-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .game-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(56, 70, 108, 0.08);
+      color: #4a5270;
+      border: 1px solid rgba(56, 70, 108, 0.14);
+    }
+
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #2f66ff, #7a45ff);
+      color: #fff;
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      box-shadow: 0 10px 22px rgba(47, 80, 198, 0.32), inset 0 1px 0 rgba(255,255,255,0.22);
+      transition: transform 0.15s ease, box-shadow 0.18s ease, filter 0.18s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .play-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(47, 80, 198, 0.38), inset 0 1px 0 rgba(255,255,255,0.24);
+      filter: saturate(1.06);
+    }
+
+    .coming-soon {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .coming-soon .play-btn {
+      background: rgba(56, 70, 108, 0.14);
+      color: #626673;
       box-shadow: none;
     }
 
-    .success {
-      background: linear-gradient(135deg, var(--action-blue), var(--action-blue-strong));
-      color: #ffffff;
-      box-shadow:
-        0 12px 26px rgba(58, 71, 198, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22);
-    }
-
-    .success:hover {
-      box-shadow:
-        0 16px 30px rgba(58, 71, 198, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.24);
-      filter: saturate(1.05);
-    }
-
-    .secondary {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(244, 248, 255, 0.92));
-      color: #2a3562;
-      border: 1px solid rgba(78, 102, 173, 0.28);
-      box-shadow: 0 10px 18px rgba(36, 49, 84, 0.12);
-    }
-
-    #skip-word-btn.secondary {
-      background: var(--danger-soft);
-      color: var(--danger-text);
-      border-color: rgba(180, 35, 24, 0.2);
-    }
-
-    .countdown {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(16, 18, 30, 0.56);
-      backdrop-filter: blur(9px);
-      border-radius: inherit;
-      z-index: 10;
-    }
-
-    .countdown-number {
-      font-size: clamp(4rem, 20vw, 8rem);
+    .coming-badge {
+      font-size: 0.7rem;
       font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.08em;
-      color: #ffffff;
-    }
-
-    .results {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      background: rgba(15, 18, 30, 0.62);
-      backdrop-filter: blur(10px);
-      border-radius: inherit;
-      z-index: 11;
-    }
-
-    .pause-overlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      background: rgba(15, 18, 30, 0.56);
-      backdrop-filter: blur(10px);
-      border-radius: inherit;
-      z-index: 10;
-    }
-
-    .pause-card {
-      width: min(100%, 360px);
-      padding: 22px;
-      border-radius: 26px;
-      background:
-        linear-gradient(165deg, rgba(255, 255, 255, 0.97), rgba(244, 247, 255, 0.94));
-      border: 1px solid rgba(75, 95, 158, 0.24);
-      text-align: center;
-      display: grid;
-      gap: 10px;
-      box-shadow: 0 28px 48px rgba(24, 35, 68, 0.26);
-    }
-
-    .pause-card p {
-      color: #5a5a60;
-      font-size: 0.92rem;
-      line-height: 1.45;
-    }
-
-    .results-card {
-      width: min(100%, 420px);
-      padding: 24px;
-      border-radius: 28px;
-      background:
-        radial-gradient(circle at 88% 10%, rgba(105, 116, 255, 0.18), transparent 34%),
-        radial-gradient(circle at 16% 90%, rgba(255, 116, 162, 0.18), transparent 36%),
-        rgba(255, 255, 255, 0.96);
-      border: 1px solid rgba(73, 93, 159, 0.24);
-      text-align: center;
-      box-shadow: 0 30px 50px rgba(24, 35, 68, 0.28);
-    }
-
-    .results-card h3 {
-      margin: 12px 0 8px;
-      font-size: clamp(2rem, 8vw, 3rem);
-      line-height: 0.92;
-      letter-spacing: -0.05em;
-      color: #111216;
-    }
-
-    .results-subtitle {
-      color: #5f5f65;
-      font-size: 0.95rem;
-      line-height: 1.45;
-    }
-
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin: 18px 0 16px;
-    }
-
-    .stat {
-      padding: 15px 12px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(245, 248, 255, 0.94), rgba(255, 242, 247, 0.9));
-      border: 1px solid rgba(79, 101, 172, 0.2);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36);
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 1.9rem;
-      line-height: 1;
-      letter-spacing: -0.05em;
-      margin-bottom: 5px;
-      color: #17171b;
-    }
-
-    .stat span {
-      color: #67676d;
-      font-size: 0.88rem;
-    }
-
-    .feedback-correct .word-card {
-      transform: scale(1.01);
-    }
-
-    .feedback-skip .word-card {
-      transform: scale(0.992);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    @keyframes fade-in {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(150, 100, 0, 0.12);
+      color: #7a5200;
+      border: 1px solid rgba(150, 100, 0, 0.2);
     }
 
     @keyframes drift {
-      0% {
-        transform: translate3d(0, 0, 0);
-      }
-      50% {
-        transform: translate3d(18px, -10px, 0);
-      }
-      100% {
-        transform: translate3d(0, 0, 0);
-      }
+      0%   { transform: translate3d(0, 0, 0); }
+      50%  { transform: translate3d(18px, -10px, 0); }
+      100% { transform: translate3d(0, 0, 0); }
     }
 
-    @media (min-width: 920px) {
-      .categories {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 760px) {
-      .categories {
-        grid-template-columns: 1fr;
-      }
+    .app { animation: fade-in 0.3s ease; }
 
-      .settings-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .app {
-        padding:
-          max(10px, env(safe-area-inset-top))
-          max(10px, env(safe-area-inset-right))
-          max(10px, env(safe-area-inset-bottom))
-          max(10px, env(safe-area-inset-left));
-      }
-
-      .play {
-        padding: 14px;
-      }
-
-      .word-card {
-        min-height: 50vh;
-        border-radius: 30px;
-      }
-
-      .category {
-        padding: 13px 13px 13px 14px;
-      }
-
-      .category strong {
-        font-size: 0.94rem;
-      }
-
-      .category span {
-        font-size: 0.8rem;
-      }
-
+    @media (max-width: 560px) {
+      .games-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 2.4rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
+      *, *::before, *::after {
         animation: none !important;
         transition: none !important;
       }
@@ -790,1121 +335,78 @@
   </style>
 </head>
 <body>
-  <div class="flash" id="flash"></div>
   <main class="app">
-    <section class="screen" id="start-screen">
-      <div class="intro">
-        <div class="eyebrow">Stirnraten</div>
-        <h1>Schnell loslegen</h1>
-        <p class="subtitle">Kategorie antippen, Handy weitergeben, spielen.</p>
-        <p class="fullscreen-note">Beim Start wechselt das Spiel wenn moeglich direkt in den Vollbildmodus.</p>
-      </div>
+    <header>
+      <div class="eyebrow">justinyourdreams.de</div>
+      <h1>Spielbibliothek</h1>
+      <p class="subtitle">Party-Spiele fuer alle — einfach antippen und loslegen.</p>
+    </header>
 
-      <details class="card settings-panel setup-toggle">
-        <summary>Runden-Setup (optional)</summary>
-        <div class="settings-grid">
-          <label class="setting" for="round-seconds">
-            Rundenzeit
-            <select id="round-seconds">
-              <option value="45">45 Sekunden</option>
-              <option value="60" selected>60 Sekunden</option>
-              <option value="90">90 Sekunden</option>
-            </select>
-          </label>
-          <label class="setting" for="tilt-sensitivity">
-            Neigungs-Sensitivitaet
-            <select id="tilt-sensitivity">
-              <option value="low">Niedrig (stabil)</option>
-              <option value="medium" selected>Mittel</option>
-              <option value="high">Hoch (reaktiv)</option>
-            </select>
-          </label>
+    <p class="section-label">Alle Spiele</p>
+
+    <div class="games-grid">
+
+      <a href="stirnraten.html" class="game-card" style="--thumb-start:#2f66ff;--thumb-end:#8a42ff;">
+        <div class="game-thumb">
+          <span class="game-icon">🧠</span>
         </div>
-      </details>
-
-      <div class="categories" id="categories"></div>
-    </section>
-
-    <section class="screen card play hidden" id="game-screen">
-      <div class="topbar">
-        <div>
-          <div class="eyebrow">Kategorie</div>
-          <h2 id="category-title">Alltag</h2>
-          <p class="meta" id="progress-text">1 von 12</p>
-        </div>
-        <div class="topbar-controls">
-          <div class="timer" id="timer">60</div>
-          <button class="secondary pause-btn" id="pause-btn" type="button">Menue</button>
-        </div>
-      </div>
-
-      <div class="word-card" id="word-card">
-        <div class="word-wrap" id="word-wrap">
-          <div class="word" id="word-display">Bereit?</div>
-          <p class="hint" id="hint-display">Lege direkt los.</p>
-        </div>
-      </div>
-
-      <div class="countdown hidden" id="countdown">
-        <div class="countdown-number" id="countdown-number">3</div>
-      </div>
-
-      <div class="pause-overlay hidden" id="pause-overlay">
-        <div class="pause-card">
-          <div class="eyebrow">Menue</div>
-          <p>Kurze Pause oder direkt neue Kategorie.</p>
-          <div class="stack">
-            <button class="success" id="resume-btn">Weiter</button>
-            <button class="secondary hidden" id="menu-recalibrate-btn">Neigung neu kalibrieren</button>
-            <button class="secondary hidden" id="sensor-btn">Bewegung aktivieren</button>
-            <button class="secondary" id="menu-home-btn">Neue Kategorie</button>
+        <div class="game-info">
+          <div class="game-meta">
+            <p class="game-name">Stirnraten</p>
+            <span class="game-badge">Multiplayer</span>
           </div>
-        </div>
-      </div>
-
-      <div class="results hidden" id="results">
-        <div class="results-card">
-          <div class="eyebrow">Runde vorbei</div>
-          <h3 id="results-title">Stark</h3>
-          <p class="results-subtitle" id="results-subtitle">Deine Runde ist fertig.</p>
-          <div class="results-grid">
-            <div class="stat">
-              <strong id="correct-count">0</strong>
-              <span>Richtig</span>
+          <p class="game-desc">Handy an die Stirn, Freunde beschreiben den Begriff. Wer schafft die meisten in 60 Sekunden?</p>
+          <div class="game-footer">
+            <div class="game-tags">
+              <span class="tag">Party</span>
+              <span class="tag">Worte</span>
             </div>
-            <div class="stat">
-              <strong id="skip-count">0</strong>
-              <span>Uebersprungen</span>
-            </div>
+            <span class="play-btn">Spielen</span>
           </div>
-          <div class="stack">
-            <button class="success" id="play-again-btn">Nochmal spielen</button>
-            <button class="secondary" id="results-home-btn">Andere Kategorie</button>
+        </div>
+      </a>
+
+      <div class="game-card coming-soon" style="--thumb-start:#ff416c;--thumb-end:#ff9a3c;">
+        <div class="game-thumb">
+          <span class="game-icon">🎨</span>
+        </div>
+        <div class="game-info">
+          <div class="game-meta">
+            <p class="game-name">Zeichnen</p>
+            <span class="coming-badge">Bald</span>
+          </div>
+          <p class="game-desc">Einen Begriff zeichnen, die anderen tippen. Wer errät es zuerst?</p>
+          <div class="game-footer">
+            <div class="game-tags">
+              <span class="tag">Party</span>
+              <span class="tag">Kreativ</span>
+            </div>
+            <span class="play-btn">Bald</span>
           </div>
         </div>
       </div>
 
-      <div class="stack">
-        <div class="sensor-ui">
-          <div class="sensor-note hidden" id="sensor-note"></div>
+      <div class="game-card coming-soon" style="--thumb-start:#00c6a7;--thumb-end:#38ef7d;">
+        <div class="game-thumb">
+          <span class="game-icon">❓</span>
         </div>
-        <div class="action-row hidden" id="action-row" aria-hidden="true">
-          <button class="success" id="next-word-btn">Richtig</button>
-          <button class="secondary" id="skip-word-btn">Falsch</button>
+        <div class="game-info">
+          <div class="game-meta">
+            <p class="game-name">Quiz</p>
+            <span class="coming-badge">Bald</span>
+          </div>
+          <p class="game-desc">Allgemeinwissen-Fragen gegen die Zeit. Wer weiß am meisten?</p>
+          <div class="game-footer">
+            <div class="game-tags">
+              <span class="tag">Party</span>
+              <span class="tag">Wissen</span>
+            </div>
+            <span class="play-btn">Bald</span>
+          </div>
         </div>
       </div>
-    </section>
+
+    </div>
   </main>
-
-  <script>
-    const categories = {
-      Alltag: {
-        colors: ["#ff7a18", "#ffb347"],
-        words: [
-          "Kuehlschrank", "Fernbedienung", "Regenschirm", "Kopfkissen", "Zahnbuerste",
-          "Rucksack", "Toaster", "Schluessel", "Sonnenbrille", "Wasserflasche",
-          "Waschmaschine", "Fahrradhelm", "Ladekabel", "Pizzakarton", "Taschenlampe",
-          "Kaffeefilter", "Einkaufswagen", "Reisepass", "Haartrockner", "Staubsauger",
-          "Spuelmaschine", "Klopapier", "Bettdecke", "Handtuch", "Wecker",
-          "Brotdose", "Thermobecher", "Schuhkarton", "Schere", "Pflaster",
-          "Kochloeffel", "Schraubenzieher", "Steckdose", "Powerbank", "Notizbuch",
-          "Kleiderbuegel"
-        ]
-      },
-      Tiere: {
-        colors: ["#00c6a7", "#1e90ff"],
-        words: [
-          "Pinguin", "Giraffe", "Krokodil", "Panda", "Faultier", "Oktopus",
-          "Eichhoernchen", "Pfau", "Koala", "Seepferdchen", "Fledermaus", "Walross",
-          "Axolotl", "Chamaeleon", "Erdmaennchen", "Igel", "Otter", "Alpaka",
-          "Delfin", "Hai", "Tintenfisch", "Zebra", "Tiger", "Loewe",
-          "Nashorn", "Elefant", "Kamel", "Papagei", "Pelikane", "Strauss",
-          "Ente", "Schmetterling", "Krokusfrosch", "Wolf", "Fuchs", "Biber",
-          "Puma", "Leopard", "Robbe", "Krabbe"
-        ]
-      },
-      Filme: {
-        colors: ["#7b61ff", "#b86bff"],
-        words: [
-          "Titanic", "Avatar", "Batman", "Shrek", "Frozen", "Star Wars",
-          "Harry Potter", "Toy Story", "Matrix", "Findet Nemo", "Jurassic Park", "Barbie",
-          "Inception", "Gladiator", "Der Pate", "Minions", "Interstellar", "Joker",
-          "Oppenheimer", "Dune", "Top Gun", "Der Koenig der Loewen", "Vaiana", "Die Eiskoenigin",
-          "Die Unglaublichen", "Madagaskar", "Cars", "Kung Fu Panda", "Spider Man", "Iron Man",
-          "Avengers", "Black Panther", "Deadpool", "Guardians of the Galaxy", "Fluch der Karibik", "James Bond",
-          "Mission Impossible", "Fast and Furious", "Rocky", "The Wolf of Wall Street", "Forrest Gump", "Fight Club"
-        ]
-      },
-      Essen: {
-        colors: ["#ff416c", "#ff4b2b"],
-        words: [
-          "Pizza", "Lasagne", "Popcorn", "Sushi", "Croissant", "Donut",
-          "Wassermelone", "Spaghetti", "Brezel", "Pfannkuchen", "Mango", "Pommes",
-          "Tiramisu", "Currywurst", "Guacamole", "Ramen", "Mozzarella", "Cheesecake",
-          "Burger", "Hotdog", "Falafel", "Dumplings", "Paella", "Risotto",
-          "Kartoffelsalat", "Burrito", "Taco", "Nachos", "Waffel", "Apfelstrudel",
-          "Pesto", "Tomatensuppe", "Kuerbissuppe", "Hummus", "Bagel", "Muesli",
-          "Couscous", "Gnocchi", "Kaiserschmarrn", "Schnitzel", "Bolognese", "Brownie"
-        ]
-      },
-      Stars: {
-        colors: ["#ff9966", "#ff5e62"],
-        words: [
-          "Taylor Swift", "Billie Eilish", "Zendaya", "Drake", "Rihanna", "Adele",
-          "Harry Styles", "Leonardo DiCaprio", "Beyonce", "Bad Bunny", "Dua Lipa", "Timothee Chalamet",
-          "Ed Sheeran", "Margot Robbie", "The Weeknd", "Travis Scott", "Lady Gaga", "Shakira",
-          "Selena Gomez", "Ariana Grande", "Sabrina Carpenter", "Olivia Rodrigo", "Doja Cat", "Post Malone",
-          "Justin Bieber", "Katy Perry", "Bruno Mars", "Ramy Youssef", "Ryan Gosling", "Emma Stone",
-          "Tom Holland", "Chris Hemsworth", "Jennifer Lawrence", "Keanu Reeves", "Pedro Pascal", "Jenna Ortega",
-          "Millie Bobby Brown", "Kim Kardashian", "Cristiano Ronaldo", "Lionel Messi", "Novak Djokovic", "Michael Jordan"
-        ]
-      },
-      Serien: {
-        colors: ["#36d1dc", "#5b86e5"],
-        words: [
-          "Stranger Things", "Friends", "Breaking Bad", "Wednesday", "The Office", "Dark",
-          "Game of Thrones", "The Bear", "Euphoria", "Bridgerton", "Black Mirror", "The Last of Us",
-          "Narcos", "Lupin", "How I Met Your Mother", "Sherlock", "Suits", "The Crown",
-          "House of the Dragon", "The Mandalorian", "Money Heist", "The Witcher", "Peaky Blinders", "Sex Education",
-          "Wednesday Addams", "Brooklyn Nine Nine", "Modern Family", "The Big Bang Theory", "The Simpsons", "South Park",
-          "One Piece", "Attack on Titan", "The Boys", "Reacher", "You", "Squid Game",
-          "Emily in Paris", "Outer Banks", "Cobra Kai", "The Walking Dead", "True Detective", "Prison Break"
-        ]
-      },
-      Orte: {
-        colors: ["#11998e", "#38ef7d"],
-        words: [
-          "Paris", "Berlin", "New York", "Tokio", "Mallorca", "Santorini",
-          "Eiffelturm", "Alpen", "Sahara", "Disneyland", "Venedig", "Sydney",
-          "London", "Bangkok", "Bali", "Rom", "Island", "Dubai",
-          "Barcelona", "Lissabon", "Amsterdam", "Prag", "Wien", "Kopenhagen",
-          "Kapstadt", "Marrakesch", "Los Angeles", "Las Vegas", "Hawaii", "Ibiza",
-          "Malediven", "Grand Canyon", "Niagarafaelle", "Mount Everest", "Amazonas", "Great Barrier Reef",
-          "Athen", "Istanbul", "Seoul", "Singapur", "Hongkong", "Rio de Janeiro"
-        ]
-      },
-      Musik: {
-        colors: ["#9d50bb", "#6e48aa"],
-        words: [
-          "Pop", "Rock", "Hip Hop", "Techno", "Jazz", "Klassik",
-          "Gitarre", "Klavier", "Schlagzeug", "Violine", "Saxophon", "Trompete",
-          "Mikrofon", "Konzert", "Festival", "DJ", "Spotify", "Vinylplatte",
-          "Taylor Swift", "Ed Sheeran", "Drake", "Billie Eilish", "Ariana Grande", "The Weeknd",
-          "Beyonce", "Coldplay", "Metallica", "Linkin Park", "Imagine Dragons", "Rammstein",
-          "Shakira", "Dua Lipa", "Post Malone", "Snoop Dogg", "Eminem", "Rihanna",
-          "Adele", "Bruno Mars", "Harry Styles", "Lady Gaga", "Karaoke", "Musikvideo"
-        ]
-      },
-      Sport: {
-        colors: ["#00b09b", "#96c93d"],
-        words: [
-          "Fussball", "Basketball", "Tennis", "Handball", "Volleyball", "Baseball",
-          "American Football", "Hockey", "Golf", "Rugby", "Badminton", "Tischtennis",
-          "Schwimmen", "Surfen", "Skifahren", "Snowboard", "Boxen", "Judo",
-          "Marathon", "Triathlon", "Yoga", "Pilates", "Fitnessstudio", "Joggen",
-          "Olympia", "Weltmeisterschaft", "Champions League", "Elfmeter", "Abseits", "Torwart",
-          "Lionel Messi", "Cristiano Ronaldo", "Kylian Mbappe", "Erling Haaland", "Serena Williams", "Roger Federer",
-          "Novak Djokovic", "LeBron James", "Michael Jordan", "Usain Bolt", "Michael Phelps", "Neymar"
-        ]
-      },
-      Berufe: {
-        colors: ["#ff6a00", "#ee0979"],
-        words: [
-          "Arzt", "Lehrerin", "Pilot", "Feuerwehr", "Polizei", "Koch",
-          "Baecker", "Friseur", "Mechaniker", "Architekt", "Programmierer", "Designer",
-          "Journalist", "Fotograf", "Schauspieler", "Musiker", "Anwalt", "Richter",
-          "Krankenpfleger", "Tierarzt", "Zahnarzt", "Psychologe", "Ingenieur", "Elektriker",
-          "Installateur", "Maler", "Maurer", "Busfahrer", "Zugfuehrer", "Florist",
-          "Gartenbauer", "Astronaut", "Influencer", "Streamer", "Youtuber", "Wissenschaftler",
-          "Bankkaufmann", "Immobilienmakler", "Eventmanager", "Barkeeper", "Modeberater", "Tontechniker"
-        ]
-      },
-      Marken: {
-        colors: ["#ff512f", "#dd2476"],
-        words: [
-          "Apple", "Samsung", "Nike", "Adidas", "Puma", "Zara",
-          "H and M", "IKEA", "Coca Cola", "Pepsi", "Red Bull", "Starbucks",
-          "McDonalds", "Burger King", "KFC", "Netflix", "Disney Plus", "Amazon",
-          "Google", "YouTube", "TikTok", "Instagram", "Snapchat", "WhatsApp",
-          "PlayStation", "Xbox", "Nintendo", "Lego", "Barbie", "Ferrari",
-          "Porsche", "BMW", "Mercedes", "Audi", "Tesla", "IPhone",
-          "AirPods", "Dyson", "Nivea", "Lacoste", "Rolex", "Prada"
-        ]
-      },
-      Gaming: {
-        colors: ["#1f4037", "#99f2c8"],
-        words: [
-          "Minecraft", "Fortnite", "Roblox", "FIFA", "EA Sports FC", "Call of Duty",
-          "Grand Theft Auto", "Mario Kart", "Super Mario", "Zelda", "Pokemon", "Among Us",
-          "Rocket League", "Valorant", "League of Legends", "Counter Strike", "Apex Legends", "Overwatch",
-          "The Sims", "Animal Crossing", "Clash Royale", "Clash of Clans", "Brawl Stars", "Candy Crush",
-          "Tetris", "Pac Man", "Donkey Kong", "Elden Ring", "Dark Souls", "God of War",
-          "Assassins Creed", "Red Dead Redemption", "Cyberpunk 2077", "Hogwarts Legacy", "Fall Guys", "Genshin Impact",
-          "Twitch", "Speedrun", "Controller", "Joystick", "Headset", "Bosskampf"
-        ]
-      },
-      Disney: {
-        colors: ["#4776e6", "#8e54e9"],
-        words: [
-          "Micky Maus", "Minnie Maus", "Donald Duck", "Goofy", "Pluto", "Arielle",
-          "Aladdin", "Jasmin", "Genie", "Die Eiskoenigin", "Elsa", "Anna",
-          "Olaf", "Der Koenig der Loewen", "Simba", "Timon", "Pumbaa", "Toy Story",
-          "Woody", "Buzz Lightyear", "Findet Nemo", "Dorie", "Cars", "Lightning McQueen",
-          "Ratatouille", "Wall E", "Up", "Baymax", "Vaiana", "Maui",
-          "Coco", "Encanto", "Rapunzel", "Merida", "Mulan", "Pocahontas",
-          "Cinderella", "Schneewittchen", "Dumbo", "Bambi", "Peter Pan", "Susi und Strolch"
-        ]
-      },
-      Superhelden: {
-        colors: ["#3a1c71", "#d76d77"],
-        words: [
-          "Spider Man", "Batman", "Superman", "Iron Man", "Captain America", "Thor",
-          "Hulk", "Black Widow", "Hawkeye", "Doctor Strange", "Scarlet Witch", "Vision",
-          "Black Panther", "Ant Man", "Wasp", "Loki", "Thanos", "Wonder Woman",
-          "Aquaman", "Flash", "Green Lantern", "Catwoman", "Joker", "Harley Quinn",
-          "Deadpool", "Wolverine", "Professor X", "Magneto", "Storm", "Groot",
-          "Rocket Raccoon", "Star Lord", "Gamora", "Drax", "Venom", "Daredevil",
-          "Punisher", "Shazam", "Blue Beetle", "Moon Knight", "Blade", "Robin"
-        ]
-      },
-      Internet: {
-        colors: ["#4e54c8", "#8f94fb"],
-        words: [
-          "TikTok", "Instagram", "YouTube", "Snapchat", "Twitch", "Discord",
-          "WhatsApp", "Telegram", "X ehemals Twitter", "Reddit", "Podcast", "Livestream",
-          "Selfie", "Emoji", "Meme", "Hashtag", "Viral", "Follower",
-          "Influencer", "Content Creator", "Thumbnail", "Kommentar", "Algorithmus", "Story",
-          "Reel", "Shorts", "Filter", "GIF", "Cloud", "QR Code",
-          "Google Maps", "Wikipedia", "Netflix", "Prime Video", "Spotify", "Duolingo",
-          "ChatGPT", "Canva", "Zoom", "Teams", "AirDrop", "WLAN"
-        ]
-      }
-    };
-
-    const state = {
-      selectedCategory: "",
-      deck: [],
-      currentWord: "",
-      currentIndex: 0,
-      roundSeconds: 60,
-      timeLeft: 60,
-      tiltSensitivity: "medium",
-      timerId: null,
-      sensorEnabled: false,
-      sensorPermissionNeeded: false,
-      tiltLocked: false,
-      countdownActive: false,
-      pauseActive: false,
-      roundActive: false,
-      lastTiltAt: 0,
-      smoothedBeta: 0,
-      neutralBeta: null,
-      gestureType: "",
-      gestureArmedAt: 0,
-      gesturePeak: 0,
-      tiltCooldownMs: 850,
-      calibrationActive: false,
-      calibrationSamples: [],
-      showTiltHint: false,
-      tiltHintTimeoutId: null,
-      correctCount: 0,
-      skipCount: 0
-    };
-
-    const SENSOR_HINT = "Nach vorne kippen = richtig. Nach hinten kippen = falsch.";
-    const TILT_PROFILES = {
-      low: {
-        armThreshold: 15,
-        confirmThreshold: 28,
-        holdMs: 115,
-        cooldownMs: 1000,
-        releaseWindow: 9,
-        releaseDelayMs: 260,
-        neutralWindow: 8
-      },
-      medium: {
-        armThreshold: 13,
-        confirmThreshold: 24,
-        holdMs: 95,
-        cooldownMs: 850,
-        releaseWindow: 8,
-        releaseDelayMs: 220,
-        neutralWindow: 8
-      },
-      high: {
-        armThreshold: 10,
-        confirmThreshold: 20,
-        holdMs: 75,
-        cooldownMs: 650,
-        releaseWindow: 7,
-        releaseDelayMs: 180,
-        neutralWindow: 7
-      }
-    };
-    let feedbackAudioContext = null;
-
-    const elements = {
-      flash: document.getElementById("flash"),
-      categories: document.getElementById("categories"),
-      startScreen: document.getElementById("start-screen"),
-      gameScreen: document.getElementById("game-screen"),
-      roundSecondsSelect: document.getElementById("round-seconds"),
-      tiltSensitivitySelect: document.getElementById("tilt-sensitivity"),
-      categoryTitle: document.getElementById("category-title"),
-      progressText: document.getElementById("progress-text"),
-      timer: document.getElementById("timer"),
-      pauseBtn: document.getElementById("pause-btn"),
-      wordCard: document.getElementById("word-card"),
-      wordWrap: document.getElementById("word-wrap"),
-      wordDisplay: document.getElementById("word-display"),
-      hintDisplay: document.getElementById("hint-display"),
-      sensorNote: document.getElementById("sensor-note"),
-      actionRow: document.getElementById("action-row"),
-      sensorBtn: document.getElementById("sensor-btn"),
-      menuRecalibrateBtn: document.getElementById("menu-recalibrate-btn"),
-      nextWordBtn: document.getElementById("next-word-btn"),
-      skipWordBtn: document.getElementById("skip-word-btn"),
-      countdown: document.getElementById("countdown"),
-      countdownNumber: document.getElementById("countdown-number"),
-      pauseOverlay: document.getElementById("pause-overlay"),
-      resumeBtn: document.getElementById("resume-btn"),
-      menuHomeBtn: document.getElementById("menu-home-btn"),
-      results: document.getElementById("results"),
-      resultsTitle: document.getElementById("results-title"),
-      resultsSubtitle: document.getElementById("results-subtitle"),
-      correctCount: document.getElementById("correct-count"),
-      skipCount: document.getElementById("skip-count"),
-      playAgainBtn: document.getElementById("play-again-btn"),
-      resultsHomeBtn: document.getElementById("results-home-btn")
-    };
-
-    function syncFullscreenState() {
-      document.body.classList.toggle("is-fullscreen", Boolean(document.fullscreenElement));
-    }
-
-    async function enterFullscreen() {
-      const target = document.documentElement;
-      if (document.fullscreenElement || !target.requestFullscreen) {
-        syncFullscreenState();
-        return Boolean(document.fullscreenElement || !target.requestFullscreen);
-      }
-
-      try {
-        await target.requestFullscreen({ navigationUI: "hide" });
-        syncFullscreenState();
-        return true;
-      } catch (error) {
-        syncFullscreenState();
-        return false;
-      }
-    }
-
-    function shuffle(list) {
-      const copy = [...list];
-      for (let i = copy.length - 1; i > 0; i -= 1) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    }
-
-    function getTiltProfile() {
-      return TILT_PROFILES[state.tiltSensitivity] || TILT_PROFILES.medium;
-    }
-
-    function applySettingsFromUi() {
-      const seconds = Number(elements.roundSecondsSelect.value);
-      if (Number.isFinite(seconds) && seconds > 0) {
-        state.roundSeconds = seconds;
-      }
-
-      const selectedSensitivity = elements.tiltSensitivitySelect.value;
-      state.tiltSensitivity = TILT_PROFILES[selectedSensitivity] ? selectedSensitivity : "medium";
-      state.tiltCooldownMs = getTiltProfile().cooldownMs;
-
-      if (!state.selectedCategory) {
-        elements.timer.textContent = state.roundSeconds;
-      }
-    }
-
-    function renderCategories() {
-      elements.categories.innerHTML = "";
-      Object.entries(categories).forEach(([name, category]) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "category";
-        button.style.setProperty("--card-start", category.colors[0]);
-        button.style.setProperty("--card-end", category.colors[1]);
-        button.innerHTML = "<strong>" + name + "</strong><span>" + category.words.length + " Begriffe</span>";
-        button.addEventListener("click", () => startGame(name));
-        elements.categories.appendChild(button);
-      });
-    }
-
-    function applyTheme(categoryName) {
-      const theme = categories[categoryName];
-      if (!theme) {
-        return;
-      }
-
-      document.documentElement.style.setProperty("--theme-start", theme.colors[0]);
-      document.documentElement.style.setProperty("--theme-end", theme.colors[1]);
-    }
-
-    function updateProgress() {
-      const shownIndex = Math.min(state.currentIndex + 1, state.deck.length);
-      elements.progressText.textContent = shownIndex + " von " + state.deck.length;
-      elements.timer.textContent = state.timeLeft;
-    }
-
-    function fitWordText() {
-      const wordEl = elements.wordDisplay;
-      const wordCardEl = elements.wordCard;
-      if (!wordEl || !wordCardEl) {
-        return;
-      }
-
-      const maxFont = Math.min(100, Math.max(54, window.innerWidth * 0.14));
-      const minFont = 30;
-      const availableWidth = Math.max(180, wordCardEl.clientWidth - 72);
-      const availableHeight = Math.max(70, wordCardEl.clientHeight * 0.44);
-
-      let size = maxFont;
-      wordEl.style.fontSize = size + "px";
-
-      while (
-        size > minFont &&
-        (wordEl.scrollWidth > availableWidth || wordEl.scrollHeight > availableHeight)
-      ) {
-        size -= 2;
-        wordEl.style.fontSize = size + "px";
-      }
-    }
-
-    function resetTiltGesture() {
-      state.gestureType = "";
-      state.gestureArmedAt = 0;
-      state.gesturePeak = 0;
-    }
-
-    function clearTiltHint() {
-      if (state.tiltHintTimeoutId) {
-        window.clearTimeout(state.tiltHintTimeoutId);
-        state.tiltHintTimeoutId = null;
-      }
-      state.showTiltHint = false;
-      elements.hintDisplay.textContent = "";
-      elements.hintDisplay.classList.add("hidden");
-    }
-
-    function showTiltHintOnce() {
-      clearTiltHint();
-      state.showTiltHint = true;
-      elements.hintDisplay.textContent = SENSOR_HINT;
-      elements.hintDisplay.classList.remove("hidden");
-      state.tiltHintTimeoutId = window.setTimeout(() => {
-        clearTiltHint();
-      }, 6000);
-    }
-
-    function applyCalibrationFromSamples(samples) {
-      if (!samples || samples.length < 6) {
-        return false;
-      }
-
-      const sorted = [...samples].sort((a, b) => a - b);
-      const trim = Math.floor(sorted.length * 0.2);
-      const start = Math.min(trim, sorted.length - 1);
-      const end = Math.max(start + 1, sorted.length - trim);
-      const core = sorted.slice(start, end);
-      const average = core.reduce((sum, value) => sum + value, 0) / core.length;
-
-      state.neutralBeta = average;
-      state.smoothedBeta = average;
-      state.tiltLocked = false;
-      resetTiltGesture();
-      return true;
-    }
-
-    async function calibrateTilt(durationMs = 850) {
-      if (!state.sensorEnabled) {
-        return false;
-      }
-
-      state.calibrationActive = true;
-      state.calibrationSamples = [];
-      elements.sensorNote.classList.remove("hidden");
-      elements.sensorNote.classList.add("warning");
-      elements.sensorNote.textContent = "Kalibriere Neigung ... Handy kurz ruhig an der Stirn halten.";
-
-      await new Promise((resolve) => window.setTimeout(resolve, durationMs));
-
-      state.calibrationActive = false;
-      const calibrated = applyCalibrationFromSamples(state.calibrationSamples);
-      updateSensorUi();
-      return calibrated;
-    }
-
-    function showWord() {
-      state.currentWord = state.deck[state.currentIndex] || "";
-      if (!state.currentWord) {
-        finishGame();
-        return;
-      }
-
-      elements.wordDisplay.textContent = state.currentWord;
-      if (state.showTiltHint) {
-        elements.hintDisplay.textContent = SENSOR_HINT;
-        elements.hintDisplay.classList.remove("hidden");
-      } else {
-        elements.hintDisplay.textContent = "";
-        elements.hintDisplay.classList.add("hidden");
-      }
-      window.requestAnimationFrame(fitWordText);
-      updateProgress();
-    }
-
-    function flashScreen(color) {
-      document.documentElement.style.setProperty("--flash", color);
-      document.body.classList.add("flash-on");
-      window.setTimeout(() => {
-        document.body.classList.remove("flash-on");
-      }, 180);
-    }
-
-    function ensureFeedbackAudio() {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) {
-        return null;
-      }
-
-      if (!feedbackAudioContext) {
-        feedbackAudioContext = new AudioCtx();
-      }
-
-      if (feedbackAudioContext.state === "suspended") {
-        feedbackAudioContext.resume().catch(() => {});
-      }
-
-      return feedbackAudioContext;
-    }
-
-    function playAudioFeedback(kind) {
-      const ctx = ensureFeedbackAudio();
-      if (!ctx) {
-        return;
-      }
-
-      const tones = kind === "correct"
-        ? [{ freq: 860, duration: 0.11, delay: 0, gain: 0.06 }]
-        : [
-            { freq: 290, duration: 0.07, delay: 0, gain: 0.06 },
-            { freq: 220, duration: 0.1, delay: 0.12, gain: 0.06 }
-          ];
-
-      const startBase = ctx.currentTime + 0.01;
-
-      tones.forEach((tone) => {
-        const osc = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        const start = startBase + tone.delay;
-        const end = start + tone.duration;
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(tone.freq, start);
-
-        gainNode.gain.setValueAtTime(0.0001, start);
-        gainNode.gain.exponentialRampToValueAtTime(tone.gain, start + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, end);
-
-        osc.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        osc.start(start);
-        osc.stop(end + 0.02);
-      });
-    }
-
-    function runHapticFeedback(kind) {
-      const pattern = kind === "correct" ? [120] : [40, 70, 40];
-      let didVibrate = false;
-
-      if (typeof navigator.vibrate === "function") {
-        try {
-          didVibrate = Boolean(navigator.vibrate(pattern));
-        } catch (error) {
-          didVibrate = false;
-        }
-      }
-
-      if (!didVibrate) {
-        playAudioFeedback(kind);
-      }
-    }
-
-    function tick() {
-      state.timeLeft -= 1;
-      elements.timer.textContent = state.timeLeft;
-      if (state.timeLeft <= 0) {
-        finishGame();
-      }
-    }
-
-    function startTimer() {
-      clearInterval(state.timerId);
-      state.timerId = window.setInterval(tick, 1000);
-      state.roundActive = true;
-      elements.nextWordBtn.disabled = false;
-      elements.skipWordBtn.disabled = false;
-      elements.pauseBtn.disabled = false;
-    }
-
-    function stopTimer() {
-      clearInterval(state.timerId);
-      state.timerId = null;
-      state.roundActive = false;
-    }
-
-    function updatePauseUi() {
-      if (state.pauseActive) {
-        elements.pauseOverlay.classList.remove("hidden");
-      } else {
-        elements.pauseOverlay.classList.add("hidden");
-      }
-      elements.pauseBtn.textContent = "Menue";
-    }
-
-    function pauseRound() {
-      if (!state.roundActive || state.countdownActive || state.pauseActive) {
-        return;
-      }
-
-      if (!elements.results.classList.contains("hidden")) {
-        return;
-      }
-
-      state.pauseActive = true;
-      stopTimer();
-      elements.nextWordBtn.disabled = true;
-      elements.skipWordBtn.disabled = true;
-      updatePauseUi();
-    }
-
-    function resumeRound() {
-      if (!state.pauseActive || state.countdownActive || state.timeLeft <= 0) {
-        return;
-      }
-
-      state.pauseActive = false;
-      updatePauseUi();
-      startTimer();
-    }
-
-    function togglePause() {
-      if (state.pauseActive) {
-        resumeRound();
-      } else {
-        pauseRound();
-      }
-    }
-
-    function updateSensorUi() {
-      if (state.sensorPermissionNeeded && !state.sensorEnabled) {
-        elements.sensorBtn.classList.remove("hidden");
-        elements.menuRecalibrateBtn.classList.add("hidden");
-        elements.sensorNote.classList.remove("hidden");
-        elements.sensorNote.classList.add("warning");
-        elements.sensorNote.textContent = "Falls nichts passiert: im Menue auf Bewegung aktivieren tippen.";
-        return;
-      }
-
-      elements.sensorBtn.classList.add("hidden");
-      if (!state.calibrationActive) {
-        elements.sensorNote.classList.remove("warning");
-      }
-
-      if (state.sensorEnabled) {
-        elements.menuRecalibrateBtn.classList.remove("hidden");
-        if (!state.calibrationActive) {
-          elements.sensorNote.classList.add("hidden");
-          elements.sensorNote.textContent = "";
-        }
-      } else {
-        elements.menuRecalibrateBtn.classList.add("hidden");
-        if (!state.selectedCategory) {
-          elements.sensorNote.classList.add("hidden");
-          elements.sensorNote.textContent = "";
-          return;
-        }
-        elements.sensorNote.classList.remove("hidden");
-        elements.sensorNote.classList.add("warning");
-        elements.sensorNote.textContent = "Kippen wird auf diesem Geraet nicht erkannt. Bitte anderes Geraet oder Browser nutzen.";
-      }
-    }
-
-    async function enableMotion() {
-      try {
-        if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-          state.sensorPermissionNeeded = true;
-          const permission = await DeviceOrientationEvent.requestPermission();
-          state.sensorEnabled = permission === "granted";
-          state.sensorPermissionNeeded = false;
-        } else if ("ondeviceorientation" in window) {
-          state.sensorEnabled = true;
-          state.sensorPermissionNeeded = false;
-        } else {
-          state.sensorEnabled = false;
-          state.sensorPermissionNeeded = false;
-        }
-      } catch (error) {
-        state.sensorEnabled = false;
-        state.sensorPermissionNeeded = true;
-      }
-
-      updateSensorUi();
-    }
-
-    function pulseFeedback(kind) {
-      elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
-      void elements.gameScreen.offsetWidth;
-      elements.gameScreen.classList.add(kind === "correct" ? "feedback-correct" : "feedback-skip");
-    }
-
-    function nextWord(kind = "correct") {
-      if (!state.roundActive || state.countdownActive || state.pauseActive) {
-        return;
-      }
-
-      if (state.showTiltHint) {
-        clearTiltHint();
-      }
-
-      pulseFeedback(kind);
-      if (kind === "correct") {
-        state.correctCount += 1;
-        flashScreen("rgba(51, 196, 125, 0.82)");
-        runHapticFeedback("correct");
-      } else {
-        state.skipCount += 1;
-        flashScreen("rgba(255, 87, 87, 0.8)");
-        runHapticFeedback("skip");
-      }
-
-      state.currentIndex += 1;
-      showWord();
-    }
-
-    function handleOrientation(event) {
-      const rawBeta = typeof event.beta === "number" ? event.beta : null;
-      if (rawBeta === null) {
-        return;
-      }
-
-      if (state.smoothedBeta === 0) {
-        state.smoothedBeta = rawBeta;
-      } else {
-        state.smoothedBeta = state.smoothedBeta * 0.8 + rawBeta * 0.2;
-      }
-
-      if (state.calibrationActive) {
-        state.calibrationSamples.push(rawBeta);
-        return;
-      }
-
-      if (!state.sensorEnabled || !state.selectedCategory || !state.roundActive || state.countdownActive || state.pauseActive) {
-        return;
-      }
-
-      const beta = state.smoothedBeta;
-      if (state.neutralBeta === null) {
-        state.neutralBeta = beta;
-        return;
-      }
-
-      const now = Date.now();
-      const delta = beta - state.neutralBeta;
-      const profile = getTiltProfile();
-
-      if (state.tiltLocked) {
-        if (Math.abs(delta) < profile.releaseWindow && now - state.lastTiltAt > profile.releaseDelayMs) {
-          state.tiltLocked = false;
-          resetTiltGesture();
-        }
-        return;
-      }
-
-      if (now - state.lastTiltAt < profile.cooldownMs) {
-        return;
-      }
-
-      if (Math.abs(delta) < profile.neutralWindow) {
-        state.neutralBeta = state.neutralBeta * 0.97 + beta * 0.03;
-        resetTiltGesture();
-        return;
-      }
-
-      const armThreshold = profile.armThreshold;
-      const confirmThreshold = profile.confirmThreshold;
-      const holdMs = profile.holdMs;
-
-      if (!state.gestureType) {
-        if (delta <= -armThreshold) {
-          state.gestureType = "correct";
-          state.gestureArmedAt = now;
-          state.gesturePeak = delta;
-        } else if (delta >= armThreshold) {
-          state.gestureType = "skip";
-          state.gestureArmedAt = now;
-          state.gesturePeak = delta;
-        }
-        return;
-      }
-
-      if (state.gestureType === "correct") {
-        if (delta >= armThreshold) {
-          state.gestureType = "skip";
-          state.gestureArmedAt = now;
-          state.gesturePeak = delta;
-          return;
-        }
-
-        state.gesturePeak = Math.min(state.gesturePeak, delta);
-        if (state.gesturePeak <= -confirmThreshold && now - state.gestureArmedAt >= holdMs) {
-          state.tiltLocked = true;
-          state.lastTiltAt = now;
-          resetTiltGesture();
-          nextWord("correct");
-        }
-        return;
-      }
-
-      if (delta <= -armThreshold) {
-        state.gestureType = "correct";
-        state.gestureArmedAt = now;
-        state.gesturePeak = delta;
-        return;
-      }
-
-      state.gesturePeak = Math.max(state.gesturePeak, delta);
-      if (state.gesturePeak >= confirmThreshold && now - state.gestureArmedAt >= holdMs) {
-        state.tiltLocked = true;
-        state.lastTiltAt = now;
-        resetTiltGesture();
-        nextWord("skip");
-      }
-    }
-
-    async function runCountdown() {
-      state.countdownActive = true;
-      elements.countdown.classList.remove("hidden");
-
-      for (const step of ["3", "2", "1"]) {
-        elements.countdownNumber.textContent = step;
-        await new Promise((resolve) => window.setTimeout(resolve, 700));
-      }
-
-      elements.countdownNumber.textContent = "Los";
-      await new Promise((resolve) => window.setTimeout(resolve, 450));
-      elements.countdown.classList.add("hidden");
-      state.countdownActive = false;
-    }
-
-    async function startGame(categoryName) {
-      applySettingsFromUi();
-      state.selectedCategory = categoryName;
-      state.deck = shuffle(categories[categoryName].words);
-      state.currentIndex = 0;
-      state.timeLeft = state.roundSeconds;
-      state.pauseActive = false;
-      state.tiltLocked = false;
-      state.lastTiltAt = 0;
-      state.smoothedBeta = 0;
-      state.neutralBeta = null;
-      state.gestureType = "";
-      state.gestureArmedAt = 0;
-      state.gesturePeak = 0;
-      state.calibrationActive = false;
-      state.calibrationSamples = [];
-      clearTiltHint();
-      state.correctCount = 0;
-      state.skipCount = 0;
-
-      applyTheme(categoryName);
-      elements.categoryTitle.textContent = categoryName;
-
-      const fullscreenOk = await enterFullscreen();
-      ensureFeedbackAudio();
-      document.body.classList.add("game-active");
-      elements.startScreen.classList.add("hidden");
-      elements.gameScreen.classList.remove("hidden");
-      elements.results.classList.add("hidden");
-      elements.pauseBtn.disabled = true;
-      updatePauseUi();
-
-      await enableMotion();
-      if (state.sensorEnabled) {
-        await calibrateTilt(900);
-      }
-      showWord();
-      showTiltHintOnce();
-      updateProgress();
-
-      if (!fullscreenOk) {
-        elements.sensorNote.classList.add("warning");
-        elements.sensorNote.textContent = "Vollbild wurde blockiert. Du kannst trotzdem direkt spielen.";
-      }
-
-      await runCountdown();
-      startTimer();
-    }
-
-    function showResults() {
-      elements.correctCount.textContent = state.correctCount;
-      elements.skipCount.textContent = state.skipCount;
-
-      if (state.correctCount >= 10) {
-        elements.resultsTitle.textContent = "Mega";
-        elements.resultsSubtitle.textContent = "Das war eine richtig starke Runde.";
-      } else if (state.correctCount >= 5) {
-        elements.resultsTitle.textContent = "Stark";
-        elements.resultsSubtitle.textContent = "Saubere Runde mit gutem Tempo.";
-      } else {
-        elements.resultsTitle.textContent = "Nochmal";
-        elements.resultsSubtitle.textContent = "Noch eine Runde und ihr seid direkt drin.";
-      }
-
-      elements.results.classList.remove("hidden");
-    }
-
-    function finishGame() {
-      stopTimer();
-      clearTiltHint();
-      state.pauseActive = false;
-      state.countdownActive = false;
-      elements.countdown.classList.add("hidden");
-      elements.wordDisplay.textContent = "Fertig";
-      elements.hintDisplay.textContent = "Tippe auf \"Neue Kategorie\" fuer die naechste Runde.";
-      elements.hintDisplay.classList.remove("hidden");
-      window.requestAnimationFrame(fitWordText);
-      elements.progressText.textContent = state.selectedCategory;
-      elements.timer.textContent = "00";
-      elements.nextWordBtn.disabled = true;
-      elements.skipWordBtn.disabled = true;
-      elements.pauseBtn.disabled = true;
-      updatePauseUi();
-      showResults();
-    }
-
-    function replayCurrentCategory() {
-      if (!state.selectedCategory) {
-        resetToStart();
-        return;
-      }
-
-      stopTimer();
-      state.deck = shuffle(categories[state.selectedCategory].words);
-      state.currentIndex = 0;
-      state.timeLeft = state.roundSeconds;
-      state.pauseActive = false;
-      state.tiltLocked = false;
-      state.lastTiltAt = 0;
-      state.smoothedBeta = 0;
-      state.neutralBeta = null;
-      state.gestureType = "";
-      state.gestureArmedAt = 0;
-      state.gesturePeak = 0;
-      state.calibrationActive = false;
-      state.calibrationSamples = [];
-      clearTiltHint();
-      state.correctCount = 0;
-      state.skipCount = 0;
-      state.countdownActive = false;
-
-      elements.results.classList.add("hidden");
-      elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
-      elements.pauseBtn.disabled = true;
-      updatePauseUi();
-      showWord();
-      showTiltHintOnce();
-      updateProgress();
-
-      const startRound = async () => {
-        if (state.sensorEnabled) {
-          await calibrateTilt(700);
-        }
-        await runCountdown();
-        startTimer();
-      };
-
-      startRound();
-    }
-
-    function resetToStart() {
-      stopTimer();
-      state.selectedCategory = "";
-      state.deck = [];
-      state.currentWord = "";
-      state.currentIndex = 0;
-      state.pauseActive = false;
-      state.timeLeft = state.roundSeconds;
-      state.tiltLocked = false;
-      state.lastTiltAt = 0;
-      state.countdownActive = false;
-      state.smoothedBeta = 0;
-      state.neutralBeta = null;
-      state.gestureType = "";
-      state.gestureArmedAt = 0;
-      state.gesturePeak = 0;
-      state.calibrationActive = false;
-      state.calibrationSamples = [];
-      clearTiltHint();
-      state.correctCount = 0;
-      state.skipCount = 0;
-
-      elements.nextWordBtn.disabled = false;
-      elements.skipWordBtn.disabled = false;
-      elements.wordDisplay.textContent = "Bereit?";
-      elements.hintDisplay.textContent = "Lege direkt los.";
-      elements.hintDisplay.classList.remove("hidden");
-      window.requestAnimationFrame(fitWordText);
-      elements.timer.textContent = state.roundSeconds;
-      elements.progressText.textContent = "1 von 12";
-      elements.startScreen.classList.remove("hidden");
-      elements.gameScreen.classList.add("hidden");
-      document.body.classList.remove("game-active");
-      elements.pauseBtn.disabled = true;
-      updatePauseUi();
-      elements.gameScreen.classList.remove("feedback-correct", "feedback-skip");
-      elements.countdown.classList.add("hidden");
-      elements.results.classList.add("hidden");
-      updateSensorUi();
-    }
-
-    elements.nextWordBtn.addEventListener("click", () => nextWord("correct"));
-    elements.skipWordBtn.addEventListener("click", () => nextWord("skip"));
-    elements.pauseBtn.addEventListener("click", togglePause);
-    elements.resumeBtn.addEventListener("click", resumeRound);
-    elements.menuHomeBtn.addEventListener("click", resetToStart);
-    elements.sensorBtn.addEventListener("click", enableMotion);
-    elements.menuRecalibrateBtn.addEventListener("click", () => calibrateTilt(900));
-    elements.playAgainBtn.addEventListener("click", replayCurrentCategory);
-    elements.resultsHomeBtn.addEventListener("click", resetToStart);
-    elements.roundSecondsSelect.addEventListener("change", applySettingsFromUi);
-    elements.tiltSensitivitySelect.addEventListener("change", () => {
-      applySettingsFromUi();
-      if (state.sensorEnabled && state.selectedCategory && !state.countdownActive) {
-        calibrateTilt(700);
-      }
-    });
-    window.addEventListener("deviceorientation", handleOrientation);
-    window.addEventListener("resize", fitWordText);
-    document.addEventListener("fullscreenchange", syncFullscreenState);
-
-    renderCategories();
-    applySettingsFromUi();
-    elements.pauseBtn.disabled = true;
-    updatePauseUi();
-    updateSensorUi();
-    syncFullscreenState();
-  </script>
 </body>
 </html>
